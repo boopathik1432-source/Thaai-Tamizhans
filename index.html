@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="3d-kabaddi-arena">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏆 தாய் தமிழன்ஸ் (THAAI TAMIZHANS) — Official Portal</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/jpeg" href="assets/kabaddi_logo.jpg">
+  
+  <!-- FontAwesome & Remix Icon CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-theme="3d-kabaddi-arena">
+
+  <!-- Floating Ambient Glassmorphism Backlight Orbs (Creates genuine Glassmorphism Refraction) -->
+  <div class="glass-orb glass-orb-1"></div>
+  <div class="glass-orb glass-orb-2"></div>
+  <div class="glass-orb glass-orb-3"></div>
+
+  <!-- 3D REAL-TIME ANIMATED CANVAS & SCENE -->
+  <div id="scene3DWrap" class="scene-3d-wrap">
+    <canvas id="canvas3DScene" class="canvas-3d-scene"></canvas>
+    <div class="synthwave-sun-3d"></div>
+    <div class="lightning-flash-overlay" id="lightningFlash"></div>
+    <div id="particles3DContainer"></div>
+  </div>
+
+  <!-- FULL SCREEN 3D GLASSMORPHIC LOGIN SCREEN -->
+  <div id="loginScreen" class="login-screen-overlay">
+    <div class="login-card-3d">
+      <!-- Club Brand Header -->
+      <div class="login-logo-wrap">
+        <img src="assets/kabaddi_logo.jpg" alt="Logo" class="login-logo-img">
+        <h2 class="text-gradient-orange" style="font-size: 1.5rem; font-weight: 900; margin-bottom: 2px;">தாய் தமிழன்ஸ்</h2>
+        <div style="font-size: 0.76rem; font-weight: 800; color: var(--accent-gold); letter-spacing: 1.2px; text-transform: uppercase;">
+          THAAI TAMIZHANS KABADDI CLUB
+        </div>
+        <p style="font-size: 0.80rem; color: #94a3b8; margin-top: 4px;">Official Squad & Coach Portal</p>
+      </div>
+
+      <!-- Role Selection Tabs -->
+      <div class="login-tabs-nav">
+        <button type="button" class="login-tab-btn active" id="tabLoginCoach" onclick="switchLoginTab('coach')">
+          <i class="ri-user-star-fill"></i> Coach Login
+        </button>
+        <button type="button" class="login-tab-btn" id="tabLoginPlayer" onclick="switchLoginTab('player')">
+          <i class="ri-run-fill"></i> Player Login
+        </button>
+      </div>
+
+      <!-- COACH LOGIN FORM -->
+      <form id="formCoachLogin" onsubmit="handleAuthLogin(event, 'coach')">
+        <div class="form-group">
+          <label><i class="ri-user-settings-line"></i> Coach Username / தொலைபேசி எண்</label>
+          <input type="text" class="form-control" id="coachLoginUsername" value="Coach Arun" placeholder="e.g. Coach Arun or 9876543210" required>
+        </div>
+        <div class="form-group">
+          <label><i class="ri-lock-password-line"></i> Security PIN / கடவுச்சொல்</label>
+          <div style="position:relative;">
+            <input type="password" class="form-control" id="coachLoginPin" value="1234" placeholder="Enter 4-digit PIN (default: 1234)" required style="padding-right: 40px;">
+            <button type="button" onclick="togglePasswordVisibility('coachLoginPin', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#94a3b8; cursor:pointer; font-size:1.1rem;">
+              <i class="ri-eye-line"></i>
+            </button>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; font-size:0.80rem;">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:#cbd5e1; margin:0;">
+            <input type="checkbox" id="coachRememberMe" checked style="accent-color:var(--accent-orange);"> Remember Me
+          </label>
+          <span style="color:var(--accent-cyan); cursor:pointer;" onclick="showToast('Default PIN for all accounts is 1234', 'ri-key-fill')">Default PIN: 1234</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:0.95rem; font-weight:800; box-shadow:var(--theme-glow);">
+          <i class="ri-login-box-line"></i> Sign In as Coach / பயிற்சியாளர் உள்நுழை
+        </button>
+
+        <!-- Quick 1-Click Demo Coach Login -->
+        <div class="quick-login-pills-wrap">
+          <div style="font-size:0.75rem; color:#94a3b8; font-weight:700; margin-bottom:8px; text-transform:uppercase;">⚡ Quick 1-Click Fast Login:</div>
+          <div class="quick-login-chip" onclick="quickLogin('coach', 0)">
+            <span><i class="ri-shield-star-fill" style="color:var(--accent-orange);"></i> <b>Coach Arun</b> (Head Coach)</span>
+            <span style="color:var(--accent-cyan); font-size:0.75rem;">Instant Login →</span>
+          </div>
+        </div>
+      </form>
+
+      <!-- PLAYER LOGIN FORM -->
+      <form id="formPlayerLogin" onsubmit="handleAuthLogin(event, 'player')" style="display:none;">
+        <div class="form-group">
+          <label><i class="ri-user-smile-line"></i> Select Player / வீரரைத் தேர்வு செய்க</label>
+          <select class="form-control" id="playerLoginSelect" onchange="onPlayerLoginSelected(this.value)">
+            <!-- Dynamically populated with squad athletes -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label><i class="ri-lock-password-line"></i> Player PIN / கடவுச்சொல்</label>
+          <div style="position:relative;">
+            <input type="password" class="form-control" id="playerLoginPin" value="1234" placeholder="Enter 4-digit PIN (default: 1234)" required style="padding-right: 40px;">
+            <button type="button" onclick="togglePasswordVisibility('playerLoginPin', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#94a3b8; cursor:pointer; font-size:1.1rem;">
+              <i class="ri-eye-line"></i>
+            </button>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; font-size:0.80rem;">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:#cbd5e1; margin:0;">
+            <input type="checkbox" id="playerRememberMe" checked style="accent-color:var(--accent-cyan);"> Remember Me
+          </label>
+          <span style="color:var(--accent-cyan); cursor:pointer;" onclick="showToast('Default PIN for all players is 1234', 'ri-key-fill')">Default PIN: 1234</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:0.95rem; font-weight:800; background:var(--grad-cyan); color:#000; box-shadow:0 0 20px rgba(0,242,254,0.4);">
+          <i class="ri-login-box-line"></i> Sign In as Player / வீரர் உள்நுழை
+        </button>
+
+        <!-- Quick 1-Click Demo Player Logins -->
+        <div class="quick-login-pills-wrap">
+          <div style="font-size:0.75rem; color:#94a3b8; font-weight:700; margin-bottom:8px; text-transform:uppercase;">⚡ Quick 1-Click Fast Login:</div>
+          <div class="quick-login-chip cyan" onclick="quickLogin('player', 1)">
+            <span><i class="ri-user-star-fill" style="color:var(--accent-cyan);"></i> <b>Boopathi K</b> (Jersey #06 - All-Rounder)</span>
+            <span style="color:var(--accent-cyan); font-size:0.75rem;">Login →</span>
+          </div>
+          <div class="quick-login-chip cyan" onclick="quickLogin('player', 2)">
+            <span><i class="ri-run-fill" style="color:var(--accent-orange);"></i> <b>Karthi S</b> (Jersey #07 - Lead Raider)</span>
+            <span style="color:var(--accent-cyan); font-size:0.75rem;">Login →</span>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="app-container">
+
+    <!-- TOP NAVBAR -->
+    <header class="top-navbar">
+      <!-- Topbar Global Search Box -->
+      <div class="topbar-search-wrap">
+        <i class="ri-search-2-line search-icon"></i>
+        <input type="text" id="globalSearchInput" class="topbar-search-input" placeholder="Search players, matches, practice... (தேடு...)" oninput="handleGlobalSearch(this.value)" autocomplete="off">
+        <button class="search-clear-btn" id="searchClearBtn" onclick="clearGlobalSearch()" style="display:none;" title="Clear Search">
+          <i class="ri-close-line"></i>
+        </button>
+        <!-- Real-time search dropdown results -->
+        <div class="search-results-dropdown" id="searchResultsDropdown"></div>
+      </div>
+
+      <div class="top-actions">
+        <!-- Theme Selector (10 Visual & 3D Animated Themes) -->
+        <div class="theme-picker-wrap">
+          <button class="theme-btn" id="themePickerBtn" onclick="toggleThemeMenu()" title="Theme Matru / Change Theme">
+            <i class="ri-palette-line" style="color:var(--theme-primary); font-size:1.1rem;"></i>
+            <span id="activeThemeLabel">🔥 3D Pro Kabaddi Arena</span>
+            <i class="ri-arrow-down-s-line" style="font-size:0.8rem; opacity:0.7;"></i>
+          </button>
+          <div class="theme-menu" id="themeMenu">
+            <div class="theme-menu-title">🎨 SELECT THEME / தீம் மாற்று</div>
+            <div class="theme-opt" onclick="setAppTheme('cyber-neon')">
+              <span class="theme-dot" style="background:#00f2fe; box-shadow:0 0 10px #00f2fe;"></span>
+              <div>
+                <div class="theme-opt-name">💎 Cyber Neon Glass</div>
+                <div class="theme-opt-desc">Electric Cyan & Magenta Glass</div>
+              </div>
+            </div>
+            <div class="theme-opt" onclick="setAppTheme('royal-gold')">
+              <span class="theme-dot" style="background:#fbbf24; box-shadow:0 0 10px #fbbf24;"></span>
+              <div>
+                <div class="theme-opt-name">👑 Royal Tamizhan Gold</div>
+                <div class="theme-opt-desc">24K Gold & Onyx Luxury</div>
+              </div>
+            </div>
+            <div class="theme-menu-title" style="margin-top:6px; border-top:1px solid var(--glass-border); padding-top:8px;">🔥 3D KABADDI THEMES / 3D தீம்கள்</div>
+            <div class="theme-opt" onclick="setAppTheme('3d-kabaddi-arena')">
+              <span class="theme-dot" style="background:#ff5500; box-shadow:0 0 12px #ff5500, 0 0 20px #ffb700;"></span>
+              <div>
+                <div class="theme-opt-name">🔥 3D Pro Kabaddi Arena</div>
+                <div class="theme-opt-desc">3D Perspective Court, Baulk Lines & Embers</div>
+              </div>
+            </div>
+            <div class="theme-opt" onclick="setAppTheme('3d-super-raider')">
+              <span class="theme-dot" style="background:#00f0ff; box-shadow:0 0 12px #00f0ff, 0 0 20px #8b5cf6;"></span>
+              <div>
+                <div class="theme-opt-name">⚡ 3D Super Raider Lightning</div>
+                <div class="theme-opt-desc">Velocity Raid Streaks & Ground Shockwaves</div>
+              </div>
+            </div>
+            <div class="theme-opt" onclick="setAppTheme('3d-tackle-shield')">
+              <span class="theme-dot" style="background:#00ff88; box-shadow:0 0 12px #00ff88, 0 0 20px #ffd700;"></span>
+              <div>
+                <div class="theme-opt-name">🛡️ 3D Ankle Lock Defence</div>
+                <div class="theme-opt-desc">Hexagonal Energy Wall & Chain Tackle Beams</div>
+              </div>
+            </div>
+            <div class="theme-opt" onclick="setAppTheme('3d-frog-jump')">
+              <span class="theme-dot" style="background:#00ff88; box-shadow:0 0 12px #00ff88, 0 0 20px #facc15;"></span>
+              <div>
+                <div class="theme-opt-name">🦘 3D Frog Jump Super Raid</div>
+                <div class="theme-opt-desc">Airborne Jump Arc & Landing Ground Shockwaves</div>
+              </div>
+            </div>
+            <div class="theme-opt" onclick="setAppTheme('3d-thigh-hold')">
+              <span class="theme-dot" style="background:#ff4500; box-shadow:0 0 12px #ff4500, 0 0 20px #dc2626;"></span>
+              <div>
+                <div class="theme-opt-name">🦵 3D Thigh Hold Iron Grip</div>
+                <div class="theme-opt-desc">Iron Defence Clamps & Mat Ground Crack Sparks</div>
+              </div>
+            </div>
+            <div class="theme-opt" onclick="setAppTheme('3d-toe-touch')">
+              <span class="theme-dot" style="background:#00e5ff; box-shadow:0 0 12px #00e5ff, 0 0 20px #ffe600;"></span>
+              <div>
+                <div class="theme-opt-name">🎯 3D Toe Touch Laser Raid</div>
+                <div class="theme-opt-desc">Targeting Reticle & Lightning Bonus Line Strike</div>
+              </div>
+            </div>
+            <div class="theme-opt" onclick="setAppTheme('3d-thalaivas-roar')">
+              <span class="theme-dot" style="background:#ffd700; box-shadow:0 0 12px #ffd700, 0 0 20px #2563eb;"></span>
+              <div>
+                <div class="theme-opt-name">🦁 3D Tamil Thalaivas Mass</div>
+                <div class="theme-opt-desc">Gold & Royal Blue Court, Strobes & Thalaiva Crest</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notification Bell -->
+        <div class="notification-bell-wrap">
+          <button class="bell-btn" onclick="toggleNotifications()" title="Notifications">
+            <i class="ri-notification-3-line"></i>
+            <span class="bell-badge" id="notifBadge">0</span>
+          </button>
+          <div class="notification-drawer" id="notifDrawer">
+            <div class="notif-header">
+              <div class="notif-title-row">
+                <i class="ri-notification-badge-line" style="color:var(--accent-cyan);"></i>
+                <h4 style="font-size:0.92rem; font-weight:800; margin:0;" class="text-gradient-cyan" id="notifDrawerHeading">Notifications</h4>
+                <span class="notif-count-pill" id="notifUnreadPill">0 New</span>
+              </div>
+              <button onclick="markAllNotificationsRead()" class="btn-sm btn-outline" style="font-size:0.7rem; padding:3px 8px;">Clear All</button>
+            </div>
+            <div id="notifListContainer"></div>
+          </div>
+        </div>
+
+        <!-- User Profile Pill -->
+        <div class="user-pill" onclick="navigateTo('profile')" title="View Profile">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" alt="User" class="user-avatar" id="topUserAvatar">
+          <div style="text-align:left;">
+            <div class="user-name" id="topUserName">Coach Arun</div>
+            <div style="font-size:0.72rem; color:var(--accent-cyan); font-weight:700;" id="topUserRole">Head Coach</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- COACH SIDEBAR -->
+    <aside class="sidebar" id="coachSidebar">
+      <div class="sidebar-header">
+        <img src="assets/kabaddi_logo.jpg" alt="Logo" class="sidebar-logo">
+        <div>
+          <div class="sidebar-brand-name text-gradient-orange">தாய் தமிழன்ஸ்</div>
+          <div class="sidebar-brand-sub">
+            <i class="ri-fire-fill"></i> THAAI TAMIZHANS KABADDI CLUB
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-section-label">MAIN</div>
+      <ul class="nav-menu">
+        <li class="nav-item"><button class="active" onclick="navigateTo('coach-dashboard')"><i class="ri-dashboard-3-line"></i> <span>🏠 Dashboard</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('players')"><i class="ri-group-line"></i> <span>👥 Players</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('practice')"><i class="ri-mental-health-line"></i> <span>📋 Practice</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('match-notices')"><i class="ri-megaphone-line"></i> <span>📢 Match Notices</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('performance')"><i class="ri-bar-chart-grouped-line"></i> <span>📊 Performance</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('attendance')"><i class="ri-checkbox-circle-line"></i> <span>✅ Attendance</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('communication')"><i class="ri-message-3-line"></i> <span>💬 Communication</span></button></li>
+      </ul>
+
+      <div class="nav-section-label">TEAM</div>
+      <ul class="nav-menu">
+        <li class="nav-item"><button onclick="navigateTo('team-members')"><i class="ri-team-line"></i> <span>👥 Team Members</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('files')"><i class="ri-folder-open-line"></i> <span>📁 Files</span></button></li>
+      </ul>
+
+      <div class="nav-section-label">ACCOUNT</div>
+      <ul class="nav-menu">
+        <li class="nav-item"><button onclick="navigateTo('profile')"><i class="ri-user-settings-line"></i> <span>👤 My Profile</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('settings')"><i class="ri-settings-4-line"></i> <span>⚙️ Settings</span></button></li>
+        <li class="nav-item"><button onclick="handleUserLogout()" style="color:var(--accent-red);"><i class="ri-logout-box-r-line"></i> <span>🚪 Logout (வெளியேறு)</span></button></li>
+      </ul>
+    </aside>
+
+    <!-- PLAYER SIDEBAR -->
+    <aside class="sidebar" id="playerSidebar" style="display:none;">
+      <div class="sidebar-header">
+        <img src="assets/kabaddi_logo.jpg" alt="Logo" class="sidebar-logo">
+        <div>
+          <div class="sidebar-brand-name text-gradient-orange">தாய் தமிழன்ஸ்</div>
+          <div class="sidebar-brand-sub">
+            <i class="ri-fire-fill"></i> THAAI TAMIZHANS KABADDI CLUB
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-section-label">MAIN</div>
+      <ul class="nav-menu">
+        <li class="nav-item"><button class="active" onclick="navigateTo('player-dashboard')"><i class="ri-dashboard-3-line"></i> <span>🏠 Dashboard</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('my-instructions')"><i class="ri-file-list-3-line"></i> <span>📝 My Instructions</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('my-practice')"><i class="ri-run-line"></i> <span>🏋️ My Practice</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('match-notices')"><i class="ri-megaphone-line"></i> <span>📢 Match Notices</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('my-performance')"><i class="ri-medal-line"></i> <span>📊 My Performance</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('my-attendance')"><i class="ri-calendar-check-line"></i> <span>✅ My Attendance</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('communication')"><i class="ri-chat-smile-3-line"></i> <span>💬 Communication</span></button></li>
+      </ul>
+
+      <div class="nav-section-label">TEAM</div>
+      <ul class="nav-menu">
+        <li class="nav-item"><button onclick="navigateTo('team-members')"><i class="ri-team-line"></i> <span>👥 Team Members</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('files')"><i class="ri-folder-shared-line"></i> <span>📁 Files</span></button></li>
+      </ul>
+
+      <div class="nav-section-label">ACCOUNT</div>
+      <ul class="nav-menu">
+        <li class="nav-item"><button onclick="navigateTo('profile')"><i class="ri-user-3-line"></i> <span>👤 My Profile</span></button></li>
+        <li class="nav-item"><button onclick="navigateTo('settings')"><i class="ri-settings-4-line"></i> <span>⚙️ Settings</span></button></li>
+        <li class="nav-item"><button onclick="handleUserLogout()" style="color:var(--accent-red);"><i class="ri-logout-box-r-line"></i> <span>🚪 Logout (வெளியேறு)</span></button></li>
+      </ul>
+    </aside>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main class="main-content" id="mainViewContainer">
+      <!-- Dynamic Views Rendered by app.js -->
+    </main>
+
+  </div>
+
+  <!-- MODALS -->
+  <!-- Modal: Give Instruction -->
+  <div class="modal-overlay" id="modalInstruction">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="text-gradient-cyan" id="modalInstHeader"><i class="ri-file-add-line"></i> Give Player Instruction</h3>
+        <button class="modal-close" onclick="closeModal('modalInstruction')">&times;</button>
+      </div>
+      <form id="formGiveInstruction" onsubmit="handleSendInstruction(event)">
+        <input type="hidden" id="instEditId" value="">
+        <div class="form-group">
+          <label>Select Player</label>
+          <select class="form-control" id="instPlayerSelect" required></select>
+        </div>
+        <div class="form-group">
+          <label>Instruction Title</label>
+          <input type="text" class="form-control" id="instTitle" value="Toe Touch Practice" required>
+        </div>
+        <div class="form-group">
+          <label>Instruction Details</label>
+          <textarea class="form-control" id="instBody" rows="3" required>Focus on footwork and toe-touch timing during today's practice.</textarea>
+        </div>
+        <div class="form-group">
+          <label>Priority Level</label>
+          <select class="form-control" id="instPriority">
+            <option value="Normal">Normal Priority</option>
+            <option value="Important">Important Priority</option>
+            <option value="High" selected>🔥 High Priority</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Practice Date</label>
+          <input type="text" class="form-control" id="instDate" value="09 Sep 2026">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalInstruction')">Cancel</button>
+          <button type="submit" class="btn btn-orange"><i class="ri-send-plane-fill"></i> Save Instruction</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Create/Edit Match Notice (With Paste & Local File Picker) -->
+  <div class="modal-overlay" id="modalNotice">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="text-gradient-orange" id="modalNoticeHeader"><i class="ri-megaphone-fill"></i> Create Match Notice</h3>
+        <button class="modal-close" onclick="closeModal('modalNotice')">&times;</button>
+      </div>
+      <form id="formMatchNotice" onsubmit="handleCreateNotice(event)">
+        <input type="hidden" id="noticeEditId" value="">
+        <div class="form-group">
+          <label>Match Title</label>
+          <input type="text" class="form-control" id="noticeTitle" value="Pro Kabaddi Championship Match Day Notice" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Poster Image (Click Below to Upload or Press Ctrl+V)</label>
+          <input type="hidden" id="noticeImage" value="assets/match_notice_poster.jpg">
+          
+          <input type="file" id="noticeFilePicker" accept="image/*" style="display:none;" onchange="handleFileChoose(this, 'noticeImage', 'noticePreview')">
+          
+          <div class="image-upload-dropzone" onclick="document.getElementById('noticeFilePicker').click()">
+            <i class="ri-image-add-line" style="font-size:1.5rem; color:var(--accent-cyan);"></i>
+            <div style="font-size:0.85rem; font-weight:700; color:#fff;">Click to Browse Image File OR Paste Copied Image (Ctrl+V)</div>
+            <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Supports JPG, PNG, WebP tournament posters</div>
+          </div>
+          
+          <div style="margin-top:12px; text-align:center;">
+            <img src="assets/match_notice_poster.jpg" id="noticePreview" style="max-width:100%; height:140px; object-fit:cover; border-radius:12px; border:1px solid var(--border-color); box-shadow:var(--glow-cyan);">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Date & Time</label>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <input type="text" class="form-control" id="noticeDate" value="Saturday, October 26, 2026">
+            <input type="text" class="form-control" id="noticeTime" value="7:30 PM IST">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Location / Ground</label>
+          <input type="text" class="form-control" id="noticeLocation" value="Home Arena Stadium" required>
+        </div>
+        <div class="form-group">
+          <label>Notice Message</label>
+          <textarea class="form-control" id="noticeMessage" rows="3" required>All players must report at 5:30 PM in team jersey kit.</textarea>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalNotice')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="ri-upload-cloud-line"></i> Save Match Notice</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add/Edit Player (With Paste & Local File Picker) -->
+  <div class="modal-overlay" id="modalAddPlayer">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="text-gradient-cyan" id="modalPlayerHeader"><i class="ri-user-add-line"></i> Add / Edit Player</h3>
+        <button class="modal-close" onclick="closeModal('modalAddPlayer')">&times;</button>
+      </div>
+      <form id="formAddPlayer" onsubmit="handleSavePlayer(event)">
+        <input type="hidden" id="playerEditId" value="">
+        
+        <div class="form-group">
+          <label>Player Photo (Click Below to Upload or Press Ctrl+V)</label>
+          <div style="display:flex; gap:14px; align-items:center; margin-bottom:12px;">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80" id="playerPhotoPreview" style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid var(--accent-orange); box-shadow:var(--glow-orange); flex-shrink:0;">
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <button type="button" class="btn btn-sm btn-outline" style="color:var(--accent-cyan); border-color:var(--accent-cyan);" onclick="openPhotoAdjusterFromPlayerModal()">
+                <i class="ri-crop-line"></i> ✂️ Adjust / Crop Photo (போட்டோ அட்ஜஸ்ட்)
+              </button>
+              <div style="font-size:0.76rem; color:#94a3b8;">Click to zoom, move face into circle, and center player</div>
+            </div>
+          </div>
+          <input type="hidden" id="newPlayerPhoto" value="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80">
+          
+          <input type="file" id="playerFilePicker" accept="image/*" style="display:none;" onchange="handleFileChoose(this, 'newPlayerPhoto', 'playerPhotoPreview')">
+          
+          <div class="image-upload-dropzone" onclick="document.getElementById('playerFilePicker').click()">
+            <i class="ri-image-edit-line" style="font-size:1.4rem; color:var(--accent-cyan);"></i>
+            <div style="font-size:0.85rem; font-weight:700; color:#fff;">Click to Upload Image File OR Paste Copied Image (Ctrl+V)</div>
+            <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">Supports JPG, PNG, WebP real photos</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Player Name</label>
+          <input type="text" class="form-control" id="newPlayerName" placeholder="e.g. Vikram" required>
+        </div>
+        <div class="form-group">
+          <label>Jersey Number</label>
+          <input type="text" class="form-control" id="newPlayerJersey" placeholder="#11" required>
+        </div>
+        <div class="form-group">
+          <label>Position</label>
+          <select class="form-control" id="newPlayerPos">
+            <option value="Raider">Raider</option>
+            <option value="Defender">Defender</option>
+            <option value="All-Rounder">All-Rounder</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Contact Phone</label>
+          <input type="text" class="form-control" id="newPlayerContact" placeholder="+91 90000 00000">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalAddPlayer')">Cancel</button>
+          <button type="submit" class="btn btn-green"><i class="ri-check-line"></i> Save Player</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Today's Practice Routine -->
+  <div class="modal-overlay" id="modalEditTodayPractice">
+    <div class="modal-card" style="max-width:620px; max-height:90vh; overflow-y:auto;">
+      <div class="modal-header">
+        <h3 class="text-gradient-cyan"><i class="ri-calendar-check-fill"></i> Edit Today's Practice Schedule</h3>
+        <button class="modal-close" onclick="closeModal('modalEditTodayPractice')">&times;</button>
+      </div>
+      <form id="formTodayPractice" onsubmit="handleSaveTodayPractice(event)">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label>Practice Title / பயிற்சி தலைப்பு</label>
+            <input type="text" class="form-control" id="todayPracTitle" placeholder="e.g. Kabaddi Maalai Payirchi" required>
+          </div>
+          <div class="form-group">
+            <label>Time / நேரம்</label>
+            <input type="text" class="form-control" id="todayPracTime" placeholder="e.g. Maalai 5:00 PM" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Location / Ground / ஆடுகளம்</label>
+          <input type="text" class="form-control" id="todayPracLocation" placeholder="e.g. Home Ground (Namma Ground)" required>
+        </div>
+
+        <div style="margin: 16px 0 10px 0;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <label style="font-size:0.95rem; font-weight:700; color:var(--accent-orange); margin:0;">
+              <i class="ri-list-check-2"></i> Training Drill Routine (பயிற்சி விவரங்கள்)
+            </label>
+            <span style="font-size:0.75rem; color:#94a3b8;">6 Practice Drill Sections</span>
+          </div>
+          <div id="todayPracSectionsContainer" style="display:flex; flex-direction:column; gap:10px;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalEditTodayPractice')">Cancel</button>
+          <button type="submit" class="btn btn-orange"><i class="ri-save-line"></i> Save Today's Schedule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Create/Edit Practice Calendar Session -->
+  <div class="modal-overlay" id="modalPractice">
+    <div class="modal-card" style="max-width:560px;">
+      <div class="modal-header">
+        <h3 class="text-gradient-orange"><i class="ri-calendar-event-fill"></i> <span id="modalPracticeTitle">Schedule Practice on Calendar</span></h3>
+        <button class="modal-close" onclick="closeModal('modalPractice')">&times;</button>
+      </div>
+      <form id="formPractice" onsubmit="handleSavePractice(event)">
+        <input type="hidden" id="pracEditId">
+
+        <div class="form-group">
+          <label>Practice Date / தேதி (YYYY-MM-DD)</label>
+          <input type="date" class="form-control" id="pracDate" required>
+        </div>
+
+        <div class="form-group">
+          <label>Practice Session Title / தலைப்பு</label>
+          <input type="text" class="form-control" id="pracTitle" placeholder="e.g. Maalai Kabaddi Payirchi" required>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label>Timing / நேரம்</label>
+            <input type="text" class="form-control" id="pracTime" placeholder="e.g. 5:00 PM - 7:00 PM" required>
+          </div>
+          <div class="form-group">
+            <label>Intensity / தீவிரம்</label>
+            <select class="form-control" id="pracIntensity">
+              <option value="High Intensity">⚡ High Intensity</option>
+              <option value="Medium">⚡ Medium</option>
+              <option value="Normal">⚡ Normal / Recovery</option>
+              <option value="Competition Ready">🏆 Competition Ready</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Location / Ground / ஆடுகளம்</label>
+          <input type="text" class="form-control" id="pracLocation" placeholder="e.g. Home Ground (Mat Court)" required>
+        </div>
+
+        <div class="form-group">
+          <label>Training Focus / பயிற்சி நோக்கம்</label>
+          <input type="text" class="form-control" id="pracFocus" placeholder="e.g. Raid Speed, Toe Touch & Ankle Hold Defense" required>
+        </div>
+
+        <div class="form-group">
+          <label>Specific Drills Routine / பயிற்சி விவரங்கள்</label>
+          <textarea class="form-control" id="pracDrills" rows="2" placeholder="e.g. 15 Mins warm-up, 30 Mins Toe-touch reps, 30 Mins Chain tackle..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Coach Notes for Players / வீரர்களுக்கான குறிப்பு</label>
+          <input type="text" class="form-control" id="pracCoachNotes" placeholder="e.g. All players assemble 15 mins early with kit.">
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalPractice')">Cancel</button>
+          <button type="submit" class="btn btn-orange"><i class="ri-check-line"></i> Save to Calendar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Broadcast Announcement -->
+  <div class="modal-overlay" id="modalAnnouncement">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="text-gradient-cyan"><i class="ri-broadcast-line"></i> Broadcast Announcement</h3>
+        <button class="modal-close" onclick="closeModal('modalAnnouncement')">&times;</button>
+      </div>
+      <form id="formAnnouncement" onsubmit="handleSendAnnouncement(event)">
+        <div class="form-group">
+          <label>Message Type</label>
+          <select class="form-control" id="annType">
+            <option value="📢 General Announcement">📢 General Announcement</option>
+            <option value="🏋️ Practice Update">🏋️ Practice Update</option>
+            <option value="📌 Important Message">📌 Important Message</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" class="form-control" id="annTitle" placeholder="e.g. Schedule Change" required>
+        </div>
+        <div class="form-group">
+          <label>Message Content</label>
+          <textarea class="form-control" id="annContent" rows="3" placeholder="Team message..." required></textarea>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalAnnouncement')">Cancel</button>
+          <button type="submit" class="btn btn-orange"><i class="ri-send-plane-2-fill"></i> Send Message</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Upload File (Direct File Selection for Photos, Videos & Documents) -->
+  <div class="modal-overlay" id="modalUploadFile">
+    <div class="modal-card" style="max-width: 560px;">
+      <div class="modal-header">
+        <h3 class="text-gradient-cyan"><i class="ri-upload-cloud-2-fill"></i> Upload New Team File</h3>
+        <button class="modal-close" onclick="closeModal('modalUploadFile')">&times;</button>
+      </div>
+      <form id="formUploadFile" onsubmit="handleUploadFile(event)">
+        <!-- File Picker Dropzone -->
+        <div class="file-dropzone" id="fileDropzone" onclick="document.getElementById('teamFileInput').click()" style="border: 2px dashed rgba(0, 242, 254, 0.4); border-radius: 16px; padding: 24px 16px; text-align: center; background: rgba(0, 242, 254, 0.04); cursor: pointer; transition: all 0.25s ease; margin-bottom: 18px;">
+          <input type="file" id="teamFileInput" accept="image/*,video/*,.pdf,.doc,.docx,.xlsx,.txt" style="display:none;" onchange="handleTeamFileSelected(event)">
+          <div id="dropzoneEmptyState">
+            <div class="icon-3d cyan" style="margin: 0 auto 12px; width: 56px; height: 56px; font-size: 1.6rem;"><i class="ri-upload-2-line"></i></div>
+            <div style="font-weight: 800; font-size: 0.95rem; color: #fff; margin-bottom: 4px;">Click to Select Photo, Video, or Document</div>
+            <div style="font-size: 0.78rem; color: #94a3b8;">Supports JPG, PNG, MP4, WebM, PDF, DOCX • File size will be auto-detected</div>
+          </div>
+          <!-- Selected File Live Preview Container -->
+          <div id="dropzonePreviewState" style="display:none;">
+            <div id="dropzoneMediaPreview" style="margin-bottom: 10px;"></div>
+            <div style="font-weight: 800; color: var(--accent-cyan); font-size: 0.92rem;" id="dropzoneFileName">Selected File</div>
+            <div style="font-size: 0.78rem; color: #34d399; font-weight: 700; margin-top: 2px;" id="dropzoneFileSizeBadge">Size: 0 MB</div>
+            <button type="button" class="btn btn-sm btn-outline" style="margin-top: 10px; font-size: 0.75rem;" onclick="event.stopPropagation(); document.getElementById('teamFileInput').click();">
+              <i class="ri-refresh-line"></i> Choose Different File
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>File Display Name / தலைப்பு</label>
+          <input type="text" class="form-control" id="fileNameInput" placeholder="e.g. Super_Raid_Strategy_2026.pdf" required>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div class="form-group">
+            <label>File Type / வடிவம்</label>
+            <select class="form-control" id="fileTypeInput">
+              <option value="Document">📄 Document (.pdf / .docx)</option>
+              <option value="Video">🎬 Video (.mp4 / .mov)</option>
+              <option value="Image">🖼️ Photo / Image (.jpg / .png)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>File Category / பிரிவு</label>
+            <select class="form-control" id="fileCategoryInput">
+              <option value="Tactics & Strategy">Tactics & Strategy</option>
+              <option value="Practice Video">Practice Video</option>
+              <option value="Jersey & Media">Jersey & Media</option>
+              <option value="Rule Book">Rule Book</option>
+              <option value="Fitness & Health">Fitness & Health</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>File Size / கோப்பு அளவு</label>
+          <input type="text" class="form-control" id="fileSizeInput" placeholder="e.g. 3.5 MB" value="2.0 MB" required>
+        </div>
+
+        <div class="form-group">
+          <label>Description / Coach Note (Optional)</label>
+          <textarea class="form-control" id="fileDescInput" rows="2" placeholder="Brief note about this video, tactic guide or document..."></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalUploadFile')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="ri-check-line"></i> Save & Upload to Squad</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Universal File Previewer (Photos, Videos, Documents with Full Lightbox & Download) -->
+  <div class="modal-overlay" id="modalFilePreview" style="z-index: 9999;">
+    <div class="modal-card" style="max-width: 760px; width: 95%;">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span id="previewTypeIcon" class="badge-priority normal" style="font-size:0.75rem;">FILE</span>
+          <h3 class="text-gradient-cyan" id="previewFileTitle" style="font-size:1.15rem; margin:0;">File Preview</h3>
+        </div>
+        <button class="modal-close" onclick="closeModal('modalFilePreview')">&times;</button>
+      </div>
+      <div id="previewModalBody" style="margin-bottom: 20px;">
+        <!-- Dynamic content injected: Image Lightbox, HTML5 Video Player, or Document Card -->
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-top:1px solid var(--border-color); padding-top:16px;">
+        <div id="previewMetaDetails" style="font-size:0.8rem; color:#94a3b8;">
+          <!-- Upload date & file size -->
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalFilePreview')">Close</button>
+          <button type="button" class="btn btn-primary" id="previewDownloadBtn" onclick="">
+            <i class="ri-download-2-line"></i> Download File
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Interactive Photo Adjuster & Cropper (Live Circle Viewport, Pan, Zoom, Rotate, Presets) -->
+  <div class="modal-overlay" id="modalPhotoAdjuster" style="z-index: 10000;">
+    <div class="modal-card photo-adjuster-card">
+      <div class="modal-header">
+        <h3 class="text-gradient-cyan"><i class="ri-crop-2-line"></i> Photo Adjuster & Cropper (போட்டோ அட்ஜஸ்ட்)</h3>
+        <button class="modal-close" onclick="closePhotoAdjuster()">&times;</button>
+      </div>
+
+      <div class="photo-adjuster-body">
+        <div class="photo-adjuster-hint">
+          <i class="ri-drag-move-2-line"></i>
+          <span><b>Drag</b> photo to move • <b>Slider</b> to zoom • Fit in circle & click Save!</span>
+        </div>
+
+        <!-- Viewport Container with Circular Aperture -->
+        <div class="cropper-viewport-wrap">
+          <div class="cropper-viewport" id="cropperViewport">
+            <canvas id="cropperCanvas" width="290" height="290"></canvas>
+            
+            <div class="cropper-circle-mask">
+              <div class="cropper-circle-aperture">
+                <span class="cropper-jersey-tag" id="cropperJerseyTag">#18</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1-Click Smart Presets (Upper Body Removed) -->
+        <div class="cropper-quick-presets">
+          <button type="button" class="btn-preset-chip" id="chipPresetFace" onclick="applyCropperPreset('face')">
+            <i class="ri-user-smile-line"></i> 👤 Face Focus (முகம்)
+          </button>
+          <button type="button" class="btn-preset-chip active" id="chipPresetFull" onclick="applyCropperPreset('full')">
+            <i class="ri-fullscreen-line"></i> 📐 Fit Full (முழு படம்)
+          </button>
+          <button type="button" class="btn-preset-chip" onclick="rotateCropperImage(90)">
+            <i class="ri-refresh-line"></i> 🔄 Rotate 90°
+          </button>
+          <button type="button" class="btn-preset-chip" onclick="resetCropperPosition()">
+            <i class="ri-focus-3-line"></i> 🎯 Center (மையம்)
+          </button>
+        </div>
+
+        <!-- Zoom Controls -->
+        <div class="cropper-control-row">
+          <span class="control-label"><i class="ri-zoom-in-line"></i> Zoom:</span>
+          <button type="button" class="btn-icon-step" onclick="stepCropperZoom(-0.15)" title="Zoom Out"><i class="ri-subtract-line"></i></button>
+          <input type="range" id="cropperZoomRange" min="0.5" max="4.5" step="0.02" value="1" oninput="onCropperZoomChange(this.value)">
+          <button type="button" class="btn-icon-step" onclick="stepCropperZoom(0.15)" title="Zoom In"><i class="ri-add-line"></i></button>
+          <span id="cropperZoomValue" class="zoom-value-label">1.00x</span>
+        </div>
+
+        <!-- Live Final Preview Bar -->
+        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.25); padding:8px 14px; border-radius:12px; margin-bottom:14px; border:1px solid rgba(255,255,255,0.05);">
+          <span style="font-size:0.75rem; color:#94a3b8; font-weight:700;"><i class="ri-eye-line"></i> FINAL CIRCLE PREVIEW:</span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <canvas id="cropperMiniPreviewLarge" width="44" height="44" class="cropper-mini-preview" title="Card preview"></canvas>
+            <canvas id="cropperMiniPreviewSmall" width="28" height="28" class="cropper-mini-preview" title="Bar preview"></canvas>
+          </div>
+        </div>
+
+        <!-- Modal Actions (Directly Visible Save Button) -->
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:14px;">
+          <button type="button" class="btn btn-outline" style="min-width:100px;" onclick="closePhotoAdjuster()">Cancel</button>
+          <button type="button" class="btn btn-green" style="flex:1; justify-content:center; padding:12px 18px; font-weight:900; font-size:1.02rem; box-shadow:0 0 20px var(--glow-accent);" onclick="saveAndApplyCroppedPhoto()">
+            <i class="ri-check-double-line"></i> Save Photo (சரி செய் & சேவ்)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
