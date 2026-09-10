@@ -1,4 +1,4 @@
-/* 🏆 தாய் தமிழன்ஸ் (THAAI TAMIZHANS) — KABADDI DATA & LOCAL STORAGE ENGINE */
+/* 🏆 HOME KABADDI TEAM - TANGLISH DATA & LOCAL STORAGE ENGINE */
 
 const INITIAL_KABADDI_DATA = {
   activeRole: 'coach', // 'coach' | 'player'
@@ -6,9 +6,10 @@ const INITIAL_KABADDI_DATA = {
   
   coachProfile: {
     name: 'Coach Arun',
+    pin: '1234',
     phone: '+91 98765 43210',
-    email: 'coach.arun@thaitamizhans.com',
-    experience: '12+ Varuda Anubavam (Pro Kabaddi Certified Senior Coach)',
+    email: 'coach.arun@thaaitamizhans.com',
+    experience: '12 Varuda Anubavam (Pro Kabaddi Certified Senior Head Coach)',
     photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'
   },
 
@@ -18,46 +19,51 @@ const INITIAL_KABADDI_DATA = {
       name: 'Boopathi K',
       jersey: '#06',
       position: 'All-Rounder',
+      pin: '1234',
       status: 'Active-la Irukaru',
-      contact: '+91 91234 56789',
+      contact: '+91 98765 43210',
       photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
-      attendance: { present: 28, absent: 1, late: 0, percentage: 97 }
+      attendance: { present: 28, absent: 1, late: 0, percentage: 96 }
     },
     {
       id: 2,
       name: 'Karthi S',
       jersey: '#07',
       position: 'Raider',
+      pin: '1234',
       status: 'Active-la Irukaru',
       contact: '+91 98123 45678',
       photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
-      attendance: { present: 26, absent: 2, late: 1, percentage: 90 }
-    },
-    {
-      id: 3,
-      name: 'Bala M',
-      jersey: '#03',
-      position: 'Defender',
-      status: 'Active-la Irukaru',
-      contact: '+91 97890 12345',
-      photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80',
-      attendance: { present: 25, absent: 3, late: 1, percentage: 86 }
-    },
-    {
-      id: 4,
-      name: 'Kumar R',
-      jersey: '#05',
-      position: 'Defender',
-      status: 'Active-la Irukaru',
-      contact: '+91 96543 21098',
-      photo: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80',
       attendance: { present: 27, absent: 2, late: 0, percentage: 93 }
     },
     {
+      id: 3,
+      name: 'Arun Kumar',
+      jersey: '#11',
+      position: 'Defender',
+      pin: '1234',
+      status: 'Active-la Irukaru',
+      contact: '+91 97890 12345',
+      photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80',
+      attendance: { present: 26, absent: 2, late: 1, percentage: 90 }
+    },
+    {
+      id: 4,
+      name: 'Bala Vignesh',
+      jersey: '#03',
+      position: 'Defender',
+      pin: '1234',
+      status: 'Active-la Irukaru',
+      contact: '+91 96543 21098',
+      photo: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80',
+      attendance: { present: 25, absent: 3, late: 1, percentage: 86 }
+    },
+    {
       id: 5,
-      name: 'Sanjay P',
+      name: 'Sanjay Murugan',
       jersey: '#09',
       position: 'All-Rounder',
+      pin: '1234',
       status: 'Active-la Irukaru',
       contact: '+91 95432 10987',
       photo: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80',
@@ -65,23 +71,14 @@ const INITIAL_KABADDI_DATA = {
     },
     {
       id: 6,
-      name: 'Vikram V',
-      jersey: '#11',
+      name: 'Dinesh V',
+      jersey: '#05',
       position: 'Raider',
+      pin: '1234',
       status: 'Active-la Irukaru',
       contact: '+91 94321 09876',
       photo: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=300&q=80',
       attendance: { present: 26, absent: 1, late: 1, percentage: 92 }
-    },
-    {
-      id: 7,
-      name: 'Manoj K',
-      jersey: '#04',
-      position: 'Defender',
-      status: 'Active-la Irukaru',
-      contact: '+91 93210 98765',
-      photo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80',
-      attendance: { present: 25, absent: 2, late: 1, percentage: 89 }
     }
   ],
 
@@ -156,42 +153,22 @@ const INITIAL_KABADDI_DATA = {
   instructions: [
     {
       id: 101,
-      playerId: 1, // Boopathi K
-      playerName: 'Boopathi K',
+      playerId: 1, // Arun
+      playerName: 'Arun',
       date: '09 Sep 2026',
-      title: 'Toe Touch & Bonus Line Execution',
-      instruction: 'Inaiku practice-la right corner defender-ku opposite-aa quick toe-touch matrum bonus point snatching timing nalla focus pannu.',
+      title: 'Toe Touch Practice',
+      instruction: 'Inaiku practice-la footwork matrum toe-touch timing nalla focus pannu.',
       priority: 'High Priority',
       status: 'Active'
     },
     {
       id: 102,
-      playerId: 2, // Karthi S
-      playerName: 'Karthi S',
-      date: '09 Sep 2026',
-      title: 'Frog Jump & Dubki Escape',
-      instruction: 'Double thigh hold attempt varrappo sudden airborne frog jump panni midline touch panna practice pannu.',
-      priority: 'High Priority',
-      status: 'Active'
-    },
-    {
-      id: 103,
-      playerId: 3, // Bala M
-      playerName: 'Bala M',
+      playerId: 2, // Bala
+      playerName: 'Bala',
       date: '08 Sep 2026',
-      title: 'Ankle Hold Lock Strength',
-      instruction: 'Opponent main raider deep raid varrappo timing paathu strong ankle hold grip lock podu.',
+      title: 'Ankle Hold Lock',
+      instruction: 'Opponent main raider varrappo ankle hold grip strong-aa podu.',
       priority: 'Important',
-      status: 'Active'
-    },
-    {
-      id: 104,
-      playerId: 4, // Kumar R
-      playerName: 'Kumar R',
-      date: '08 Sep 2026',
-      title: 'Chain Tackle Support',
-      instruction: 'Right corner attack pannumbothu center cover position-la irunthu immediate chain tackle support kudu.',
-      priority: 'Normal',
       status: 'Active'
     }
   ],
@@ -204,73 +181,58 @@ const INITIAL_KABADDI_DATA = {
       date: 'Saturday, October 26, 2026',
       time: '7:30 PM IST',
       location: 'Home Arena Stadium',
-      message: 'Ella players-um 5:30 PM-kulla team jersey kit-oda stadium-ku varanum. Parents & fans entry free.',
+      message: 'Ella players-um 5:30 PM-kulla team jersey kit-oda stadium-ku varanum.',
       status: 'Published'
     }
   ],
 
   performance: {
     1: { // Boopathi K
-      raid: 92, defence: 88, fitness: 95, speed: 94, stamina: 92, skill: 93, discipline: 98,
+      raid: 92, defence: 88, fitness: 95, speed: 94, stamina: 92, skill: 90, discipline: 98,
       starRating: 5,
-      notes: 'All-rounder performance semma level! Bonus line attempt & corner defence coordination is top-notch.',
+      notes: 'Super All-Rounder! Excellent toe touch reach and rock-solid ankle hold timing.',
       history: [
-        { date: 'Sep 08', raid: 90, defence: 86, fitness: 94 },
         { date: 'Sep 09', raid: 92, defence: 88, fitness: 95 }
       ]
     },
     2: { // Karthi S
-      raid: 94, defence: 72, fitness: 90, speed: 96, stamina: 88, skill: 91, discipline: 92,
+      raid: 95, defence: 78, fitness: 92, speed: 96, stamina: 90, skill: 94, discipline: 96,
       starRating: 5,
-      notes: 'Main lead raider speed explosive-aa irukku. Sudden turning raid techniques-la super improvement.',
+      notes: 'Lead Raider. Semma frog jump elevation and bonus snatch accuracy in crunch moments.',
       history: [
-        { date: 'Sep 08', raid: 92, defence: 70, fitness: 89 },
-        { date: 'Sep 09', raid: 94, defence: 72, fitness: 90 }
+        { date: 'Sep 09', raid: 95, defence: 78, fitness: 92 }
       ]
     },
-    3: { // Bala M
-      raid: 65, defence: 94, fitness: 89, speed: 82, stamina: 88, skill: 90, discipline: 95,
-      starRating: 5,
-      notes: 'Right corner ankle lock grip impenetrable! Super tackle execution is match-winning.',
-      history: [
-        { date: 'Sep 08', raid: 64, defence: 92, fitness: 88 },
-        { date: 'Sep 09', raid: 65, defence: 94, fitness: 89 }
-      ]
-    },
-    4: { // Kumar R
-      raid: 60, defence: 91, fitness: 88, speed: 84, stamina: 86, skill: 89, discipline: 94,
+    3: { // Arun Kumar
+      raid: 75, defence: 94, fitness: 89, speed: 85, stamina: 88, skill: 89, discipline: 95,
       starRating: 4,
-      notes: 'Left corner dash and chain tackle timing strong-aa irukku.',
+      notes: 'Main Corner Defender. Strong ankle lock grip and tactical chain coordination.',
       history: [
-        { date: 'Sep 08', raid: 60, defence: 89, fitness: 87 },
-        { date: 'Sep 09', raid: 60, defence: 91, fitness: 88 }
+        { date: 'Sep 09', raid: 75, defence: 94, fitness: 89 }
       ]
     },
-    5: { // Sanjay P
-      raid: 86, defence: 84, fitness: 91, speed: 88, stamina: 90, skill: 87, discipline: 93,
+    4: { // Bala Vignesh
+      raid: 74, defence: 92, fitness: 88, speed: 84, stamina: 87, skill: 88, discipline: 94,
       starRating: 4,
-      notes: 'Great all-round support in both do-or-die raids and cover defense.',
+      notes: 'Cover Defender. Thigh hold grip and dash power are at tournament peak.',
       history: [
-        { date: 'Sep 08', raid: 84, defence: 82, fitness: 89 },
-        { date: 'Sep 09', raid: 86, defence: 84, fitness: 91 }
+        { date: 'Sep 09', raid: 74, defence: 92, fitness: 88 }
       ]
     },
-    6: { // Vikram V
-      raid: 89, defence: 70, fitness: 88, speed: 92, stamina: 86, skill: 88, discipline: 90,
+    5: { // Sanjay Murugan
+      raid: 88, defence: 86, fitness: 90, speed: 89, stamina: 90, skill: 88, discipline: 93,
       starRating: 4,
-      notes: 'Hand touch acceleration and toe-reach very sharp.',
+      notes: 'Reliable All-Rounder. Great support raids and secondary corner assistance.',
       history: [
-        { date: 'Sep 08', raid: 87, defence: 68, fitness: 86 },
-        { date: 'Sep 09', raid: 89, defence: 70, fitness: 88 }
+        { date: 'Sep 09', raid: 88, defence: 86, fitness: 90 }
       ]
     },
-    7: { // Manoj K
-      raid: 62, defence: 88, fitness: 87, speed: 80, stamina: 85, skill: 86, discipline: 92,
+    6: { // Dinesh V
+      raid: 91, defence: 76, fitness: 89, speed: 93, stamina: 88, skill: 90, discipline: 94,
       starRating: 4,
-      notes: 'Cover position block and body charge execution solid-aa irukku.',
+      notes: 'Fast Raider. Hand touch speed and quick running hand touch are highly effective.',
       history: [
-        { date: 'Sep 08', raid: 60, defence: 86, fitness: 85 },
-        { date: 'Sep 09', raid: 62, defence: 88, fitness: 87 }
+        { date: 'Sep 09', raid: 91, defence: 76, fitness: 89 }
       ]
     }
   },
@@ -281,8 +243,7 @@ const INITIAL_KABADDI_DATA = {
     { playerId: 3, status: 'Present' },
     { playerId: 4, status: 'Present' },
     { playerId: 5, status: 'Present' },
-    { playerId: 6, status: 'Present' },
-    { playerId: 7, status: 'Present' }
+    { playerId: 6, status: 'Present' }
   ],
 
   messages: [
@@ -290,18 +251,9 @@ const INITIAL_KABADDI_DATA = {
       id: 301,
       sender: 'Coach Arun',
       type: '📢 General Announcement',
-      title: 'Pro Kabaddi State Championship Kit Distribution',
-      content: 'All players must assemble tomorrow at 4:30 PM for official team jersey and kit distribution. Match Notice section-la ground details check pannikonga.',
+      title: 'Match Day Notice Update',
+      content: 'Stadium-ku varra time & kit details-a Match Notice section-la check pannikonga.',
       date: '09 Sep 2026 10:30 AM',
-      unread: true
-    },
-    {
-      id: 302,
-      sender: 'Coach Arun',
-      type: '🏋️ Practice Update',
-      title: 'Evening Mat Practice Strategy',
-      content: 'Inaiku evening 5:00 PM practice-la do-or-die raid strategies matrum 3-man defense chain trapping focus pannuvom.',
-      date: '09 Sep 2026 02:15 PM',
       unread: true
     }
   ],
@@ -345,8 +297,8 @@ const INITIAL_KABADDI_DATA = {
   notifications: [
     {
       id: 501,
-      title: '🎯 புது Instruction: Toe Touch & Bonus Line Execution',
-      desc: 'Coach Boopathi K-க்கு Toe Touch & Bonus Line Practice assign பண்ணியுள்ளார். Footwork & timing focus பண்ணவும்.',
+      title: '🎯 புது Instruction: Toe Touch Practice',
+      desc: 'Coach Boopathi K-க்கு Toe Touch Practice assign பண்ணியுள்ளார். Footwork & timing focus பண்ணவும்.',
       time: '10 mins munnaadi',
       target: 'player',
       playerId: 1,
@@ -389,25 +341,37 @@ const INITIAL_KABADDI_DATA = {
   ]
 };
 
-const DATA_VERSION_KEY = 'HOME_KABADDI_DATA_VERSION_V2';
-
 function getAppData() {
-  const currentVersion = localStorage.getItem(DATA_VERSION_KEY);
   const saved = localStorage.getItem('HOME_KABADDI_APP_DATA_TANGLISH_V1');
-
-  // If user opens the freshly updated version, auto-merge or use updated initial data
-  if (!currentVersion || currentVersion !== 'v2.1') {
-    localStorage.setItem(DATA_VERSION_KEY, 'v2.1');
-    saveAppData(INITIAL_KABADDI_DATA);
-    return INITIAL_KABADDI_DATA;
-  }
-
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
       if (!parsed.players || parsed.players.length === 0) {
         parsed.players = INITIAL_KABADDI_DATA.players;
+      } else {
+        // Ensure all players have PIN and status
+        parsed.players = parsed.players.map(p => {
+          if (!p.pin) p.pin = '1234';
+          if (!p.status) p.status = 'Active-la Irukaru';
+          return p;
+        });
       }
+
+      if (!parsed.performance) {
+        parsed.performance = INITIAL_KABADDI_DATA.performance;
+      } else {
+        parsed.players.forEach(p => {
+          if (!parsed.performance[p.id]) {
+            parsed.performance[p.id] = {
+              raid: 85, defence: 80, fitness: 88, speed: 86, stamina: 85, skill: 86, discipline: 95,
+              starRating: 4,
+              notes: `${p.name} squad player performance record.`,
+              history: [{ date: 'Sep 09', raid: 85, defence: 80, fitness: 88 }]
+            };
+          }
+        });
+      }
+
       if (!parsed.practiceCalendar || parsed.practiceCalendar.length === 0) {
         parsed.practiceCalendar = INITIAL_KABADDI_DATA.practiceCalendar;
       }
@@ -416,9 +380,6 @@ function getAppData() {
       }
       if (!parsed.notifications || parsed.notifications.length === 0 || !parsed.notifications[0].target) {
         parsed.notifications = INITIAL_KABADDI_DATA.notifications;
-      }
-      if (!parsed.performance) {
-        parsed.performance = INITIAL_KABADDI_DATA.performance;
       }
       return parsed;
     } catch (e) {
@@ -470,3 +431,5 @@ function saveAppData(data) {
     }
   }
 }
+
+
