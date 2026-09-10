@@ -1492,36 +1492,7 @@ function renderAppShell() {
   }
 }
 
-// ----------------------------------------------------
-// MOBILE NAVIGATION DRAWER CONTROLLER
-// ----------------------------------------------------
-function toggleMobileSidebar() {
-  const isCoach = appData.activeRole === 'coach';
-  const sidebar = document.getElementById(isCoach ? 'coachSidebar' : 'playerSidebar');
-  const backdrop = document.getElementById('sidebarBackdrop');
-  
-  if (sidebar) {
-    sidebar.classList.toggle('mobile-open');
-    const isOpen = sidebar.classList.contains('mobile-open');
-    if (backdrop) {
-      if (isOpen) backdrop.classList.add('active');
-      else backdrop.classList.remove('active');
-    }
-  }
-}
-
-function closeMobileSidebar() {
-  const coachSidebar = document.getElementById('coachSidebar');
-  const playerSidebar = document.getElementById('playerSidebar');
-  const backdrop = document.getElementById('sidebarBackdrop');
-
-  if (coachSidebar) coachSidebar.classList.remove('mobile-open');
-  if (playerSidebar) playerSidebar.classList.remove('mobile-open');
-  if (backdrop) backdrop.classList.remove('active');
-}
-
 function navigateTo(viewKey) {
-  closeMobileSidebar();
   currentView = viewKey;
   localStorage.setItem('thaai_tamizhans_current_view', viewKey);
   
@@ -5130,7 +5101,6 @@ document.addEventListener('click', (e) => {
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    closeMobileSidebar();
     const activeModals = document.querySelectorAll('.modal-overlay.active');
     activeModals.forEach(m => {
       if (m.id === 'modalPhotoAdjuster') {
