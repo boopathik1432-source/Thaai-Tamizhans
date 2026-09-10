@@ -2,6 +2,11 @@
 
 Official Squad, Coach & Match Management Portal for **Thaai Tamizhans Kabaddi Club**.
 
+🌐 **Official Live URL:** [https://thaaitamizhans.vercel.app](https://thaaitamizhans.vercel.app/)
+
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Live%20Portal-00F2FE?style=for-the-badge&logo=vercel&logoColor=white)](https://thaaitamizhans.vercel.app/)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-FF5500?style=for-the-badge&logo=github&logoColor=white)](https://github.com/boopathik1432-source/Thaai-Tamizhans)
+
 ## 🌟 Key Features
 
 - **🔥 3D Real-Time Animated Arena**: 7 interactive 3D kabaddi themes (Pro Kabaddi Court, Super Raider Lightning, Ankle Lock Defence, Frog Jump Super Raid, Thigh Hold Iron Grip, Toe Touch Laser Raid, Tamil Thalaivas Mass) with 60FPS canvas physics.
