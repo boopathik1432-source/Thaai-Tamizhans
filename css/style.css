@@ -2514,20 +2514,6 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  :root { --sidebar-width: 80px; }
-  .sidebar-brand-name, .nav-section-label, .nav-item span { display: none; }
-  .top-navbar { left: 80px; }
-  .main-content { margin-left: 80px; }
-}
-@media (max-width: 640px) {
-  :root { --sidebar-width: 0px; }
-  .sidebar { display: none; }
-  .top-navbar { left: 0; padding: 0 16px; }
-  .main-content { margin-left: 0; padding: 16px; }
-}
-
 /* ====================================================
    INTERACTIVE PHOTO ADJUSTER & CROPPER STYLES
    ==================================================== */
@@ -3049,3 +3035,426 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(0, 242, 254, 0.14);
   border-color: var(--accent-cyan);
 }
+
+/* ===================================================
+   📱 COMPLETE MOBILE-FIRST & TABLET RESPONSIVE SUITE
+   =================================================== */
+
+/* 1. Mobile Menu Button & Sidebar Header Close Button */
+.mobile-menu-btn {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 1.35rem;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.mobile-menu-btn:hover, .mobile-menu-btn:active {
+  background: var(--theme-hover-bg, rgba(255, 255, 255, 0.18));
+  border-color: var(--theme-primary);
+  color: var(--theme-primary);
+  box-shadow: var(--theme-active-glow);
+}
+
+.sidebar-close-btn {
+  display: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--sidebar-border);
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.sidebar-close-btn:hover, .sidebar-close-btn:active {
+  background: rgba(255, 42, 95, 0.2);
+  color: var(--accent-red);
+  border-color: var(--accent-red);
+}
+
+/* 2. Frosted Sidebar Backdrop Overlay for Mobile */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.sidebar-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ===================================================
+   BREAKPOINT: TABLET & DESKTOP (max-width: 1023px)
+   =================================================== */
+@media (max-width: 1023px) {
+  .mobile-menu-btn {
+    display: inline-flex;
+  }
+  .sidebar-close-btn {
+    display: inline-flex;
+  }
+
+  .top-navbar {
+    left: 0 !important;
+    width: 100% !important;
+    padding: 0 20px;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box;
+    padding: 20px;
+  }
+
+  /* Convert Sidebar to Off-Canvas Mobile Drawer */
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 290px !important;
+    max-width: 85vw !important;
+    height: 100vh !important;
+    transform: translateX(-100%);
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    z-index: 9999 !important;
+    box-shadow: 10px 0 50px rgba(0, 0, 0, 0.85) !important;
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0) !important;
+  }
+
+  .topbar-search-wrap {
+    width: 260px;
+  }
+}
+
+/* ===================================================
+   BREAKPOINT: MOBILE PHONES (max-width: 768px)
+   =================================================== */
+@media (max-width: 768px) {
+  :root {
+    --topbar-height: 66px;
+  }
+
+  /* Universal Prevention of Horizontal Page Overflow */
+  html, body, .app-container {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Header Optimization */
+  .top-navbar {
+    height: 66px;
+    padding: 0 10px;
+    gap: 8px;
+  }
+
+  .topbar-search-wrap {
+    max-width: 145px;
+    flex: 1;
+  }
+  .topbar-search-input {
+    height: 38px;
+    padding: 0 26px 0 32px;
+    font-size: 0.78rem;
+    border-radius: 20px;
+  }
+  .topbar-search-wrap .search-icon {
+    left: 10px;
+    font-size: 0.95rem;
+  }
+  .search-clear-btn {
+    right: 8px;
+    font-size: 0.95rem;
+  }
+
+  .top-actions {
+    gap: 6px;
+  }
+
+  /* Theme Button: Compact Icon + Arrow on Mobile */
+  .theme-btn {
+    height: 38px;
+    padding: 0 10px;
+    gap: 4px;
+    font-size: 0.76rem;
+  }
+  .theme-btn span {
+    display: none;
+  }
+  .theme-menu {
+    position: fixed;
+    top: 70px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-height: 70vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+  }
+
+  /* Notification Bell */
+  .bell-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+  }
+  .notification-drawer {
+    position: fixed;
+    top: 70px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-height: 75vh;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+  }
+
+  /* User Pill: Compact Avatar */
+  .user-pill {
+    height: 38px;
+    padding: 2px 6px 2px 2px;
+    gap: 6px;
+  }
+  .user-pill-info {
+    display: none;
+  }
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Main Content Padding & Flow */
+  .main-content {
+    margin-top: 66px !important;
+    padding: 14px 10px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Headings & Text */
+  h1, h2, .main-content h2 {
+    font-size: 1.3rem !important;
+    line-height: 1.25 !important;
+  }
+  p {
+    font-size: 0.82rem !important;
+  }
+
+  /* Cards */
+  .glass-card {
+    padding: 16px 12px !important;
+    border-radius: 18px !important;
+    margin-bottom: 14px !important;
+  }
+
+  /* Universal Multi-Column Grid Stacker (Stacks desktop 2-col to 1-col) */
+  [style*="grid-template-columns: 1.5fr 1fr"],
+  [style*="grid-template-columns: 1.2fr 1fr"],
+  [style*="grid-template-columns: 1fr 1fr"],
+  [style*="grid-template-columns: 1fr 2fr"],
+  [style*="grid-template-columns:1fr 1fr"],
+  [style*="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr))"],
+  [style*="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr))"],
+  [style*="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr))"] {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* 2-Column Metrics on Mobile */
+  [style*="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))"],
+  [style*="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))"],
+  [style*="grid-template-columns:repeat(auto-fit, minmax(180px, 1fr))"],
+  [style*="grid-template-columns:repeat(auto-fit, minmax(160px, 1fr))"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* Forms & Inputs: Easy Touch & No Auto-Zoom */
+  .form-control, input, select, textarea {
+    font-size: 16px !important; /* Prevents iOS auto-zoom on focus */
+    min-height: 42px;
+    padding: 10px 12px;
+  }
+  .form-group {
+    margin-bottom: 12px;
+  }
+
+  /* Action Buttons & Touch Targets */
+  .btn {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    min-height: 40px;
+  }
+  .btn-sm {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    min-height: 32px;
+  }
+
+  /* Match Notice Posters & Images */
+  .match-notice-banner, 
+  [style*="height:140px; object-fit:cover"],
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Tables: Mobile Horizontal Scroll Support */
+  table {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  th, td {
+    padding: 8px 10px !important;
+    font-size: 0.78rem !important;
+    white-space: nowrap;
+  }
+
+  /* Practice Calendar Grid on Mobile */
+  .cal-header-row {
+    gap: 6px !important;
+  }
+  .cal-day-box {
+    min-height: 42px !important;
+    padding: 3px !important;
+    font-size: 0.75rem !important;
+  }
+
+  /* Modals: Mobile Full Viewport Fit */
+  .modal-overlay {
+    padding: 8px !important;
+    align-items: flex-end; /* Slide-up feel on mobile */
+  }
+  .modal-card {
+    width: 100% !important;
+    max-width: 100vw !important;
+    max-height: 88vh !important;
+    padding: 18px 14px !important;
+    border-radius: 20px 20px 12px 12px !important;
+    margin: 0 !important;
+  }
+  .modal-header h3 {
+    font-size: 1.05rem !important;
+  }
+
+  /* Photo Adjuster & Cropper on Mobile */
+  .photo-adjuster-card {
+    width: 100% !important;
+    max-width: 100vw !important;
+    max-height: 92vh !important;
+    padding: 14px 12px !important;
+  }
+  .cropper-viewport {
+    width: min(270px, 78vw) !important;
+    height: min(270px, 78vw) !important;
+  }
+  #cropperCanvas {
+    width: min(270px, 78vw) !important;
+    height: min(270px, 78vw) !important;
+  }
+  .cropper-circle-aperture {
+    width: min(200px, 58vw) !important;
+    height: min(200px, 58vw) !important;
+  }
+  .btn-preset-chip {
+    padding: 5px 10px;
+    font-size: 0.74rem;
+  }
+
+  /* 3D Background Canvas on Mobile (Clean GPU Power Saver) */
+  .scene-3d-wrap {
+    opacity: 0.85;
+  }
+}
+
+/* ===================================================
+   BREAKPOINT: COMPACT MOBILE (max-width: 480px)
+   (320px, 360px, 375px, 390px, 414px)
+   =================================================== */
+@media (max-width: 480px) {
+  .top-navbar {
+    padding: 0 8px;
+    gap: 6px;
+  }
+
+  .topbar-search-wrap {
+    max-width: 125px;
+  }
+  .topbar-search-input {
+    font-size: 0.74rem;
+    padding: 0 20px 0 28px;
+  }
+  .topbar-search-wrap .search-icon {
+    left: 8px;
+    font-size: 0.88rem;
+  }
+
+  .search-results-dropdown {
+    position: fixed;
+    top: 68px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    min-width: unset;
+  }
+
+  /* 1-Column Metrics on ultra-compact devices */
+  @media (max-width: 350px) {
+    [style*="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))"],
+    [style*="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))"],
+    [style*="grid-template-columns:repeat(auto-fit, minmax(180px, 1fr))"],
+    [style*="grid-template-columns:repeat(auto-fit, minmax(160px, 1fr))"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  /* Login Screen on Mobile */
+  .login-card-3d {
+    padding: 22px 14px;
+    border-radius: 20px;
+  }
+  .login-logo-img {
+    width: 60px;
+    height: 60px;
+  }
+
+  /* Toast Notification */
+  .toast-msg {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 16px !important;
+    transform: none !important;
+    width: auto !important;
+    text-align: center;
+    font-size: 0.82rem !important;
+  }
+}
+

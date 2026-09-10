@@ -136,14 +136,22 @@
     </div>
   </div>
 
+  <!-- Sidebar Backdrop Overlay for Mobile -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeMobileSidebar()"></div>
+
   <div class="app-container">
 
     <!-- TOP NAVBAR -->
     <header class="top-navbar">
+      <!-- Mobile Hamburger Menu Button -->
+      <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()" title="Toggle Navigation Menu" aria-label="Open Navigation Menu">
+        <i class="ri-menu-2-line"></i>
+      </button>
+
       <!-- Topbar Global Search Box -->
       <div class="topbar-search-wrap">
         <i class="ri-search-2-line search-icon"></i>
-        <input type="text" id="globalSearchInput" class="topbar-search-input" placeholder="Search players, matches, practice... (தேடு...)" oninput="handleGlobalSearch(this.value)" autocomplete="off">
+        <input type="text" id="globalSearchInput" class="topbar-search-input" placeholder="Search players, matches... (தேடு...)" oninput="handleGlobalSearch(this.value)" autocomplete="off">
         <button class="search-clear-btn" id="searchClearBtn" onclick="clearGlobalSearch()" style="display:none;" title="Clear Search">
           <i class="ri-close-line"></i>
         </button>
@@ -250,7 +258,7 @@
         <!-- User Profile Pill -->
         <div class="user-pill" onclick="navigateTo('profile')" title="View Profile">
           <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" alt="User" class="user-avatar" id="topUserAvatar">
-          <div style="text-align:left;">
+          <div class="user-pill-info" style="text-align:left;">
             <div class="user-name" id="topUserName">Coach Arun</div>
             <div style="font-size:0.72rem; color:var(--accent-cyan); font-weight:700;" id="topUserRole">Head Coach</div>
           </div>
@@ -262,12 +270,13 @@
     <aside class="sidebar" id="coachSidebar">
       <div class="sidebar-header">
         <img src="assets/kabaddi_logo.jpg" alt="Logo" class="sidebar-logo">
-        <div>
+        <div style="flex:1; min-width:0;">
           <div class="sidebar-brand-name text-gradient-orange">தாய் தமிழன்ஸ்</div>
           <div class="sidebar-brand-sub">
             <i class="ri-fire-fill"></i> THAAI TAMIZHANS KABADDI CLUB
           </div>
         </div>
+        <button type="button" class="sidebar-close-btn" onclick="closeMobileSidebar()" title="Close Navigation"><i class="ri-close-line"></i></button>
       </div>
 
       <div class="nav-section-label">MAIN</div>
@@ -299,12 +308,13 @@
     <aside class="sidebar" id="playerSidebar" style="display:none;">
       <div class="sidebar-header">
         <img src="assets/kabaddi_logo.jpg" alt="Logo" class="sidebar-logo">
-        <div>
+        <div style="flex:1; min-width:0;">
           <div class="sidebar-brand-name text-gradient-orange">தாய் தமிழன்ஸ்</div>
           <div class="sidebar-brand-sub">
             <i class="ri-fire-fill"></i> THAAI TAMIZHANS KABADDI CLUB
           </div>
         </div>
+        <button type="button" class="sidebar-close-btn" onclick="closeMobileSidebar()" title="Close Navigation"><i class="ri-close-line"></i></button>
       </div>
 
       <div class="nav-section-label">MAIN</div>
