@@ -2,6 +2,12 @@
   "version": 2,
   "name": "thaai-tamizhans",
   "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1.js"
+    }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",
