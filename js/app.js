@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderCurrentView();
   renderNotifications();
   setupGlobalPasteHandler();
+  fetchCloudData();
 });
 
 // ----------------------------------------------------

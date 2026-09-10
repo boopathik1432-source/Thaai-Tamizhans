@@ -1123,6 +1123,49 @@ h1, h2, h3, h4, h5, h6 {
   flex-shrink: 0;
 }
 
+/* Cloud Sync Status Pill */
+.cloud-sync-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-color);
+  padding: 0 14px;
+  height: 42px;
+  border-radius: 21px;
+  font-size: 0.80rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+.cloud-sync-pill:hover {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.25);
+}
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+  transition: all 0.3s ease;
+}
+.sync-dot.syncing {
+  background: #00f0ff;
+  box-shadow: 0 0 12px #00f0ff;
+  animation: pulseSync 0.9s infinite alternate;
+}
+.sync-dot.offline {
+  background: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b;
+}
+@keyframes pulseSync {
+  from { opacity: 0.35; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1.25); }
+}
+
 /* Role Switcher Pill */
 .role-switcher {
   background: rgba(0, 0, 0, 0.35);
@@ -3049,51 +3092,3 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(0, 242, 254, 0.14);
   border-color: var(--accent-cyan);
 }
-
-/* CLOUD BACKEND SYNC PILL */
-.cloud-sync-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(0, 242, 254, 0.3);
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #cbd5e1;
-  cursor: pointer;
-  backdrop-filter: blur(12px);
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
-.cloud-sync-pill:hover {
-  border-color: var(--accent-cyan);
-  background: rgba(0, 242, 254, 0.1);
-  color: #fff;
-  transform: translateY(-1px);
-}
-.cloud-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  transition: background 0.3s ease;
-}
-.cloud-dot.green {
-  background: #10b981;
-  box-shadow: 0 0 10px #10b981;
-}
-.cloud-dot.yellow {
-  background: #f59e0b;
-  box-shadow: 0 0 10px #f59e0b;
-  animation: cloudPulse 1s infinite alternate;
-}
-.cloud-dot.gray {
-  background: #94a3b8;
-}
-@keyframes cloudPulse {
-  0% { opacity: 0.4; transform: scale(0.9); }
-  100% { opacity: 1; transform: scale(1.2); }
-}
-
