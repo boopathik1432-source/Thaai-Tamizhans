@@ -2928,23 +2928,12 @@ h1, h2, h3, h4, h5, h6 {
   padding: 20px;
   overflow-y: auto;
   opacity: 1;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
 }
-
-/* 🚀 ZERO-FLICKER: If authenticated session exists, instantly hide login screen without any transition or paint */
-html.is-authenticated .login-screen-overlay:not(.force-show) {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  transition: none !important;
-}
-
 .login-screen-overlay.hidden {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .login-card-3d {
@@ -3060,3 +3049,51 @@ html.is-authenticated .login-screen-overlay:not(.force-show) {
   background: rgba(0, 242, 254, 0.14);
   border-color: var(--accent-cyan);
 }
+
+/* CLOUD BACKEND SYNC PILL */
+.cloud-sync-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+.cloud-sync-pill:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(0, 242, 254, 0.1);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.cloud-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.3s ease;
+}
+.cloud-dot.green {
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+}
+.cloud-dot.yellow {
+  background: #f59e0b;
+  box-shadow: 0 0 10px #f59e0b;
+  animation: cloudPulse 1s infinite alternate;
+}
+.cloud-dot.gray {
+  background: #94a3b8;
+}
+@keyframes cloudPulse {
+  0% { opacity: 0.4; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+

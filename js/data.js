@@ -2,83 +2,66 @@
 
 const INITIAL_KABADDI_DATA = {
   activeRole: 'coach', // 'coach' | 'player'
-  activePlayerId: 1,   // Current player (Boopathi K)
+  activePlayerId: 1,   // Current player (Arun)
   
   coachProfile: {
-    name: 'Coach Arun',
-    pin: '1234',
+    name: 'Coach Rajan',
     phone: '+91 98765 43210',
-    email: 'coach.arun@thaaitamizhans.com',
-    experience: '12 Varuda Anubavam (Pro Kabaddi Certified Senior Head Coach)',
+    email: 'coach.rajan@kabaddi.com',
+    experience: '12 Varuda Anubavam (Pro Kabaddi Certified Senior Coach)',
     photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80'
   },
 
   players: [
     {
       id: 1,
-      name: 'Boopathi K',
-      jersey: '#06',
-      position: 'All-Rounder',
-      pin: '1234',
-      status: 'Active-la Irukaru',
-      contact: '+91 98765 43210',
-      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
-      attendance: { present: 28, absent: 1, late: 0, percentage: 96 }
-    },
-    {
-      id: 2,
-      name: 'Karthi S',
+      name: 'Arun',
       jersey: '#07',
       position: 'Raider',
-      pin: '1234',
       status: 'Active-la Irukaru',
-      contact: '+91 98123 45678',
-      photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
-      attendance: { present: 27, absent: 2, late: 0, percentage: 93 }
-    },
-    {
-      id: 3,
-      name: 'Arun Kumar',
-      jersey: '#11',
-      position: 'Defender',
-      pin: '1234',
-      status: 'Active-la Irukaru',
-      contact: '+91 97890 12345',
-      photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80',
-      attendance: { present: 26, absent: 2, late: 1, percentage: 90 }
-    },
-    {
-      id: 4,
-      name: 'Bala Vignesh',
-      jersey: '#03',
-      position: 'Defender',
-      pin: '1234',
-      status: 'Active-la Irukaru',
-      contact: '+91 96543 21098',
-      photo: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80',
-      attendance: { present: 25, absent: 3, late: 1, percentage: 86 }
-    },
-    {
-      id: 5,
-      name: 'Sanjay Murugan',
-      jersey: '#09',
-      position: 'All-Rounder',
-      pin: '1234',
-      status: 'Active-la Irukaru',
-      contact: '+91 95432 10987',
-      photo: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80',
+      contact: '+91 91234 56789',
+      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
       attendance: { present: 24, absent: 3, late: 2, percentage: 82 }
     },
     {
-      id: 6,
-      name: 'Dinesh V',
-      jersey: '#05',
-      position: 'Raider',
-      pin: '1234',
+      id: 2,
+      name: 'Bala',
+      jersey: '#03',
+      position: 'Defender',
       status: 'Active-la Irukaru',
-      contact: '+91 94321 09876',
-      photo: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=300&q=80',
-      attendance: { present: 26, absent: 1, late: 1, percentage: 92 }
+      contact: '+91 98123 45678',
+      photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+      attendance: { present: 26, absent: 2, late: 1, percentage: 90 }
+    },
+    {
+      id: 3,
+      name: 'Kumar',
+      jersey: '#05',
+      position: 'Defender',
+      status: 'Active-la Irukaru',
+      contact: '+91 97890 12345',
+      photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80',
+      attendance: { present: 25, absent: 3, late: 1, percentage: 86 }
+    },
+    {
+      id: 4,
+      name: 'Karthi',
+      jersey: '#10',
+      position: 'Raider',
+      status: 'Active-la Irukaru',
+      contact: '+91 96543 21098',
+      photo: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80',
+      attendance: { present: 28, absent: 1, late: 0, percentage: 96 }
+    },
+    {
+      id: 5,
+      name: 'Sanjay',
+      jersey: '#09',
+      position: 'All-Rounder',
+      status: 'Active-la Irukaru',
+      contact: '+91 95432 10987',
+      photo: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80',
+      attendance: { present: 27, absent: 2, late: 0, percentage: 93 }
     }
   ],
 
@@ -187,69 +170,28 @@ const INITIAL_KABADDI_DATA = {
   ],
 
   performance: {
-    1: { // Boopathi K
-      raid: 92, defence: 88, fitness: 95, speed: 94, stamina: 92, skill: 90, discipline: 98,
-      starRating: 5,
-      notes: 'Super All-Rounder! Excellent toe touch reach and rock-solid ankle hold timing.',
-      history: [
-        { date: 'Sep 09', raid: 92, defence: 88, fitness: 95 }
-      ]
-    },
-    2: { // Karthi S
-      raid: 95, defence: 78, fitness: 92, speed: 96, stamina: 90, skill: 94, discipline: 96,
-      starRating: 5,
-      notes: 'Lead Raider. Semma frog jump elevation and bonus snatch accuracy in crunch moments.',
-      history: [
-        { date: 'Sep 09', raid: 95, defence: 78, fitness: 92 }
-      ]
-    },
-    3: { // Arun Kumar
-      raid: 75, defence: 94, fitness: 89, speed: 85, stamina: 88, skill: 89, discipline: 95,
+    1: { // Arun
+      raid: 84, defence: 76, fitness: 88, speed: 90, stamina: 85, skill: 86, discipline: 95,
       starRating: 4,
-      notes: 'Main Corner Defender. Strong ankle lock grip and tactical chain coordination.',
+      notes: 'Raid timing-la semma improvement. Bonus line attempt mattum innum konjam practice pannu.',
       history: [
-        { date: 'Sep 09', raid: 75, defence: 94, fitness: 89 }
-      ]
-    },
-    4: { // Bala Vignesh
-      raid: 74, defence: 92, fitness: 88, speed: 84, stamina: 87, skill: 88, discipline: 94,
-      starRating: 4,
-      notes: 'Cover Defender. Thigh hold grip and dash power are at tournament peak.',
-      history: [
-        { date: 'Sep 09', raid: 74, defence: 92, fitness: 88 }
-      ]
-    },
-    5: { // Sanjay Murugan
-      raid: 88, defence: 86, fitness: 90, speed: 89, stamina: 90, skill: 88, discipline: 93,
-      starRating: 4,
-      notes: 'Reliable All-Rounder. Great support raids and secondary corner assistance.',
-      history: [
-        { date: 'Sep 09', raid: 88, defence: 86, fitness: 90 }
-      ]
-    },
-    6: { // Dinesh V
-      raid: 91, defence: 76, fitness: 89, speed: 93, stamina: 88, skill: 90, discipline: 94,
-      starRating: 4,
-      notes: 'Fast Raider. Hand touch speed and quick running hand touch are highly effective.',
-      history: [
-        { date: 'Sep 09', raid: 91, defence: 76, fitness: 89 }
+        { date: 'Sep 08', raid: 84, defence: 76, fitness: 88 }
       ]
     }
   },
 
   todayAttendance: [
     { playerId: 1, status: 'Present' },
-    { playerId: 2, status: 'Present' },
+    { playerId: 2, status: 'Absent' },
     { playerId: 3, status: 'Present' },
     { playerId: 4, status: 'Present' },
-    { playerId: 5, status: 'Present' },
-    { playerId: 6, status: 'Present' }
+    { playerId: 5, status: 'Present' }
   ],
 
   messages: [
     {
       id: 301,
-      sender: 'Coach Arun',
+      sender: 'Coach Rajan',
       type: '📢 General Announcement',
       title: 'Match Day Notice Update',
       content: 'Stadium-ku varra time & kit details-a Match Notice section-la check pannikonga.',
@@ -298,7 +240,7 @@ const INITIAL_KABADDI_DATA = {
     {
       id: 501,
       title: '🎯 புது Instruction: Toe Touch Practice',
-      desc: 'Coach Boopathi K-க்கு Toe Touch Practice assign பண்ணியுள்ளார். Footwork & timing focus பண்ணவும்.',
+      desc: 'Coach Arun-க்கு Toe Touch Practice assign பண்ணியுள்ளார். Footwork & timing focus பண்ணவும்.',
       time: '10 mins munnaadi',
       target: 'player',
       playerId: 1,
@@ -306,7 +248,7 @@ const INITIAL_KABADDI_DATA = {
       icon: 'ri-file-list-3-line',
       actionView: 'my-instructions',
       senderRole: 'coach',
-      senderName: 'Coach Arun',
+      senderName: 'Coach Rajan',
       read: false,
       readByPlayers: []
     },
@@ -320,7 +262,7 @@ const INITIAL_KABADDI_DATA = {
       icon: 'ri-megaphone-fill',
       actionView: 'match-notices',
       senderRole: 'coach',
-      senderName: 'Coach Arun',
+      senderName: 'Coach Rajan',
       read: false,
       readByPlayers: []
     },
@@ -334,7 +276,7 @@ const INITIAL_KABADDI_DATA = {
       icon: 'ri-calendar-event-line',
       actionView: 'my-practice',
       senderRole: 'coach',
-      senderName: 'Coach Arun',
+      senderName: 'Coach Rajan',
       read: false,
       readByPlayers: []
     }
@@ -346,32 +288,6 @@ function getAppData() {
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
-      if (!parsed.players || parsed.players.length === 0) {
-        parsed.players = INITIAL_KABADDI_DATA.players;
-      } else {
-        // Ensure all players have PIN and status
-        parsed.players = parsed.players.map(p => {
-          if (!p.pin) p.pin = '1234';
-          if (!p.status) p.status = 'Active-la Irukaru';
-          return p;
-        });
-      }
-
-      if (!parsed.performance) {
-        parsed.performance = INITIAL_KABADDI_DATA.performance;
-      } else {
-        parsed.players.forEach(p => {
-          if (!parsed.performance[p.id]) {
-            parsed.performance[p.id] = {
-              raid: 85, defence: 80, fitness: 88, speed: 86, stamina: 85, skill: 86, discipline: 95,
-              starRating: 4,
-              notes: `${p.name} squad player performance record.`,
-              history: [{ date: 'Sep 09', raid: 85, defence: 80, fitness: 88 }]
-            };
-          }
-        });
-      }
-
       if (!parsed.practiceCalendar || parsed.practiceCalendar.length === 0) {
         parsed.practiceCalendar = INITIAL_KABADDI_DATA.practiceCalendar;
       }
@@ -390,7 +306,9 @@ function getAppData() {
   return INITIAL_KABADDI_DATA;
 }
 
-function saveAppData(data) {
+let cloudSyncDebounceTimer = null;
+
+function saveAppData(data, skipCloudSync = false) {
   try {
     // Sanitize files array so heavy data URLs / blob URLs do not crash LocalStorage 5MB quota
     const clone = JSON.parse(JSON.stringify(data));
@@ -430,6 +348,131 @@ function saveAppData(data) {
       console.error('Critical storage error:', err);
     }
   }
+
+  // Trigger background cloud sync to Neon PostgreSQL
+  if (!skipCloudSync) {
+    clearTimeout(cloudSyncDebounceTimer);
+    cloudSyncDebounceTimer = setTimeout(() => {
+      syncDataToCloud(data);
+    }, 600);
+  }
 }
+
+// ----------------------------------------------------
+// ☁️ NEON POSTGRESQL CLOUD SYNC ENGINE (OFFLINE-FIRST)
+// ----------------------------------------------------
+let isCloudSyncing = false;
+
+function updateSyncUI(status, text) {
+  const dot = document.getElementById('cloudSyncDot');
+  const label = document.getElementById('cloudSyncLabel');
+  if (!dot || !label) return;
+
+  if (status === 'syncing') {
+    dot.className = 'cloud-dot yellow';
+    label.innerText = text || 'Syncing to Cloud...';
+  } else if (status === 'synced') {
+    dot.className = 'cloud-dot green';
+    label.innerText = text || 'Neon Cloud Synced';
+  } else {
+    dot.className = 'cloud-dot gray';
+    label.innerText = text || 'Local Cache (Offline)';
+  }
+}
+
+async function syncDataToCloud(data) {
+  if (isCloudSyncing) return;
+  isCloudSyncing = true;
+  updateSyncUI('syncing', 'Syncing to Neon...');
+
+  try {
+    // Strip giant local blobs before sending
+    const payload = JSON.parse(JSON.stringify(data));
+    if (payload.files) {
+      payload.files = payload.files.map(f => ({
+        id: f.id,
+        name: f.name,
+        type: f.type,
+        category: f.category,
+        size: f.size,
+        date: f.date,
+        description: f.description,
+        thumbnail: f.type === 'Video' ? 'assets/kabaddi_arena_bg.jpg' : 'assets/thaai_tamizhans_logo.jpg',
+        url: f.url && f.url.startsWith('data:') ? '' : f.url
+      }));
+    }
+
+    const res = await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: payload })
+    });
+
+    if (res.ok) {
+      const result = await res.json();
+      if (result.success) {
+        updateSyncUI('synced', 'Neon Cloud Synced');
+      } else {
+        updateSyncUI('offline', 'Local Cache Active');
+      }
+    } else {
+      updateSyncUI('offline', 'Local Cache (Offline)');
+    }
+  } catch (err) {
+    // Graceful offline fallback
+    updateSyncUI('offline', 'Local Cache (Offline)');
+  } finally {
+    isCloudSyncing = false;
+  }
+}
+
+async function fetchFromCloud() {
+  updateSyncUI('syncing', 'Connecting to Neon...');
+  try {
+    const res = await fetch('/api/sync', { method: 'GET' });
+    if (res.ok) {
+      const result = await res.json();
+      if (result.success && result.data && typeof result.data === 'object') {
+        const cloudData = result.data;
+        // Merge cloud data safely with local state
+        const local = getAppData();
+        
+        // Preserve active role & player selection from session
+        cloudData.activeRole = local.activeRole || 'coach';
+        cloudData.activePlayerId = local.activePlayerId || 1;
+
+        // Save into local storage
+        saveAppData(cloudData, true);
+        window.appData = cloudData;
+
+        // If app.js is ready, refresh the current view
+        if (typeof renderCurrentView === 'function') {
+          renderCurrentView();
+        }
+        if (typeof renderAppShell === 'function') {
+          renderAppShell();
+        }
+        updateSyncUI('synced', 'Neon Cloud Synced');
+        return;
+      }
+    }
+    updateSyncUI('offline', 'Local Cache (Offline)');
+  } catch (e) {
+    updateSyncUI('offline', 'Local Cache (Offline)');
+  }
+}
+
+function triggerManualCloudSync() {
+  const current = typeof appData !== 'undefined' ? appData : getAppData();
+  syncDataToCloud(current);
+}
+
+// Automatically initiate cloud sync on startup
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    fetchFromCloud();
+  }, 300);
+});
+
 
 

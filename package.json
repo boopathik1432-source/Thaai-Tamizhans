@@ -1,0 +1,13 @@
+{
+  "name": "thaai-tamizhans",
+  "version": "1.0.0",
+  "description": "Official Thaai Tamizhans Kabaddi Club Portal",
+  "main": "api/sync.js",
+  "scripts": {
+    "start": "npx http-server -p 8080",
+    "dev": "npx http-server -p 8080"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4"
+  }
+}

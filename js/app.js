@@ -33,12 +33,6 @@ function initAuth() {
     try {
       const session = JSON.parse(savedSession);
       if (session && session.role) {
-        document.documentElement.classList.add('is-authenticated');
-        if (loginScreen) {
-          loginScreen.classList.remove('force-show');
-          loginScreen.classList.add('hidden');
-        }
-
         appData.activeRole = session.role;
         const savedView = localStorage.getItem('thaai_tamizhans_current_view');
 
@@ -58,6 +52,10 @@ function initAuth() {
             currentView = 'coach-dashboard';
           }
         }
+
+        if (loginScreen) {
+          loginScreen.classList.add('hidden');
+        }
         return;
       }
     } catch (e) {
@@ -66,9 +64,7 @@ function initAuth() {
   }
 
   // If no saved session, display the Login Screen
-  document.documentElement.classList.remove('is-authenticated');
   if (loginScreen) {
-    loginScreen.classList.add('force-show');
     loginScreen.classList.remove('hidden');
   }
 }
@@ -141,12 +137,8 @@ function handleAuthLogin(e, role) {
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
-    document.documentElement.classList.add('is-authenticated');
 
-    if (loginScreen) {
-      loginScreen.classList.remove('force-show');
-      loginScreen.classList.add('hidden');
-    }
+    if (loginScreen) loginScreen.classList.add('hidden');
     switchRole('coach');
     showToast(`🎉 Welcome back, ${username}! (தலைமை பயிற்சியாளர்)`);
   } else {
@@ -168,13 +160,9 @@ function handleAuthLogin(e, role) {
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
-    document.documentElement.classList.add('is-authenticated');
 
     appData.activePlayerId = player.id;
-    if (loginScreen) {
-      loginScreen.classList.remove('force-show');
-      loginScreen.classList.add('hidden');
-    }
+    if (loginScreen) loginScreen.classList.add('hidden');
     switchRole('player');
     showToast(`🎉 Welcome, ${player.name} (Jersey #${player.jersey})!`);
   }
@@ -190,12 +178,8 @@ function quickLogin(role, targetPlayerId) {
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
-    document.documentElement.classList.add('is-authenticated');
 
-    if (loginScreen) {
-      loginScreen.classList.remove('force-show');
-      loginScreen.classList.add('hidden');
-    }
+    if (loginScreen) loginScreen.classList.add('hidden');
     switchRole('coach');
     showToast('⚡ Quick Login Successful: Logged in as Head Coach Arun!');
   } else {
@@ -212,13 +196,9 @@ function quickLogin(role, targetPlayerId) {
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
-    document.documentElement.classList.add('is-authenticated');
 
     appData.activePlayerId = player.id;
-    if (loginScreen) {
-      loginScreen.classList.remove('force-show');
-      loginScreen.classList.add('hidden');
-    }
+    if (loginScreen) loginScreen.classList.add('hidden');
     switchRole('player');
     showToast(`⚡ Quick Login: Welcome, ${player.name} (Jersey #${player.jersey})!`);
   }
@@ -227,11 +207,9 @@ function quickLogin(role, targetPlayerId) {
 function handleUserLogout() {
   if (confirm('Are you sure you want to log out from தாய் தமிழன்ஸ் Portal?')) {
     localStorage.removeItem('thaai_tamizhans_auth_session');
-    document.documentElement.classList.remove('is-authenticated');
     
     const loginScreen = document.getElementById('loginScreen');
     if (loginScreen) {
-      loginScreen.classList.add('force-show');
       loginScreen.classList.remove('hidden');
       switchLoginTab(appData.activeRole || 'coach');
       populatePlayerLoginDropdown();
