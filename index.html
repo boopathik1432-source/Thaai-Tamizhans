@@ -12,6 +12,21 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
   
+  <!-- Pre-render Authentication Check (Prevents any Flash of Login Screen on Refresh) -->
+  <script>
+    (function() {
+      try {
+        var s = localStorage.getItem('thaai_tamizhans_auth_session');
+        if (s) {
+          var p = JSON.parse(s);
+          if (p && p.role) {
+            document.documentElement.classList.add('is-authenticated');
+          }
+        }
+      } catch(e) {}
+    })();
+  </script>
+  
   <!-- Custom Styles -->
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -120,9 +135,17 @@
           <i class="ri-login-box-line"></i> Sign In as Player / வீரர் உள்நுழை
         </button>
 
-        <!-- Quick 1-Click Demo Player Logins (Dynamically Populated) -->
-        <div class="quick-login-pills-wrap" id="quickPlayerLoginContainer">
-          <!-- Populated from appData.players -->
+        <!-- Quick 1-Click Demo Player Logins -->
+        <div class="quick-login-pills-wrap">
+          <div style="font-size:0.75rem; color:#94a3b8; font-weight:700; margin-bottom:8px; text-transform:uppercase;">⚡ Quick 1-Click Fast Login:</div>
+          <div class="quick-login-chip cyan" onclick="quickLogin('player', 1)">
+            <span><i class="ri-user-star-fill" style="color:var(--accent-cyan);"></i> <b>Boopathi K</b> (Jersey #06 - All-Rounder)</span>
+            <span style="color:var(--accent-cyan); font-size:0.75rem;">Login →</span>
+          </div>
+          <div class="quick-login-chip cyan" onclick="quickLogin('player', 2)">
+            <span><i class="ri-run-fill" style="color:var(--accent-orange);"></i> <b>Karthi S</b> (Jersey #07 - Lead Raider)</span>
+            <span style="color:var(--accent-cyan); font-size:0.75rem;">Login →</span>
+          </div>
         </div>
       </form>
     </div>
@@ -478,10 +501,6 @@
         <div class="form-group">
           <label>Contact Phone</label>
           <input type="text" class="form-control" id="newPlayerContact" placeholder="+91 90000 00000">
-        </div>
-        <div class="form-group">
-          <label><i class="ri-lock-password-line"></i> Player Login PIN / உள்நுழைவு கடவுச்சொல் (Default: 1234)</label>
-          <input type="text" class="form-control" id="newPlayerPin" placeholder="4-digit PIN (default: 1234)" value="1234" maxlength="6">
         </div>
         <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
           <button type="button" class="btn btn-outline" onclick="closeModal('modalAddPlayer')">Cancel</button>

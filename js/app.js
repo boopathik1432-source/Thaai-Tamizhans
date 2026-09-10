@@ -33,6 +33,12 @@ function initAuth() {
     try {
       const session = JSON.parse(savedSession);
       if (session && session.role) {
+        document.documentElement.classList.add('is-authenticated');
+        if (loginScreen) {
+          loginScreen.classList.remove('force-show');
+          loginScreen.classList.add('hidden');
+        }
+
         appData.activeRole = session.role;
         const savedView = localStorage.getItem('thaai_tamizhans_current_view');
 
@@ -52,10 +58,6 @@ function initAuth() {
             currentView = 'coach-dashboard';
           }
         }
-
-        if (loginScreen) {
-          loginScreen.classList.add('hidden');
-        }
         return;
       }
     } catch (e) {
@@ -64,41 +66,22 @@ function initAuth() {
   }
 
   // If no saved session, display the Login Screen
+  document.documentElement.classList.remove('is-authenticated');
   if (loginScreen) {
+    loginScreen.classList.add('force-show');
     loginScreen.classList.remove('hidden');
   }
 }
 
 function populatePlayerLoginDropdown() {
   const select = document.getElementById('playerLoginSelect');
-  if (select) {
-    select.innerHTML = (appData.players || []).map(p => `
-      <option value="${p.id}" ${p.id === appData.activePlayerId ? 'selected' : ''}>
-        ${p.name} (Jersey #${p.jersey} • ${p.position})
-      </option>
-    `).join('');
-  }
+  if (!select) return;
 
-  // Populate dynamic quick login chips for players
-  const quickContainer = document.getElementById('quickPlayerLoginContainer');
-  if (quickContainer) {
-    if (!appData.players || appData.players.length === 0) {
-      quickContainer.innerHTML = '<div style="font-size:0.78rem; color:#94a3b8;">No registered players yet.</div>';
-    } else {
-      quickContainer.innerHTML = `
-        <div style="font-size:0.75rem; color:#94a3b8; font-weight:700; margin-bottom:8px; text-transform:uppercase;">⚡ Quick 1-Click Fast Login:</div>
-        ${appData.players.map(p => `
-          <div class="quick-login-chip cyan" onclick="quickLogin('player', ${p.id})">
-            <span>
-              <i class="${p.position === 'Raider' ? 'ri-run-fill' : (p.position === 'Defender' ? 'ri-shield-fill' : 'ri-user-star-fill')}" style="color:var(--accent-cyan);"></i>
-              <b>${p.name}</b> (Jersey #${p.jersey} - ${p.position})
-            </span>
-            <span style="color:var(--accent-cyan); font-size:0.75rem;">Login →</span>
-          </div>
-        `).join('')}
-      `;
-    }
-  }
+  select.innerHTML = (appData.players || []).map(p => `
+    <option value="${p.id}" ${p.id === appData.activePlayerId ? 'selected' : ''}>
+      ${p.name} (Jersey #${p.jersey} • ${p.position})
+    </option>
+  `).join('');
 }
 
 function switchLoginTab(role) {
@@ -147,8 +130,8 @@ function handleAuthLogin(e, role) {
     const username = document.getElementById('coachLoginUsername')?.value.trim() || 'Coach Arun';
     const pin = document.getElementById('coachLoginPin')?.value.trim();
 
-    if (pin && pin !== '1234' && pin !== (appData.coachProfile?.pin || '1234')) {
-      showToast('⚠️ Incorrect Coach PIN (Default: 1234)', 'ri-error-warning-line');
+    if (pin && pin !== '1234' && pin.length < 3) {
+      showToast('⚠️ Please enter valid 4-digit PIN (default: 1234)', 'ri-error-warning-line');
       return;
     }
 
@@ -158,25 +141,22 @@ function handleAuthLogin(e, role) {
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
+    document.documentElement.classList.add('is-authenticated');
 
-    if (loginScreen) loginScreen.classList.add('hidden');
+    if (loginScreen) {
+      loginScreen.classList.remove('force-show');
+      loginScreen.classList.add('hidden');
+    }
     switchRole('coach');
     showToast(`🎉 Welcome back, ${username}! (தலைமை பயிற்சியாளர்)`);
   } else {
     const playerSelect = document.getElementById('playerLoginSelect');
     const playerId = parseInt(playerSelect ? playerSelect.value : (appData.players[0] ? appData.players[0].id : 1));
-    const player = appData.players.find(p => p.id === playerId);
-
-    if (!player) {
-      showToast('⚠️ Player not registered in squad!', 'ri-error-warning-line');
-      return;
-    }
-
+    const player = appData.players.find(p => p.id === playerId) || appData.players[0];
     const pin = document.getElementById('playerLoginPin')?.value.trim();
-    const expectedPin = player.pin || '1234';
 
-    if (pin && pin !== expectedPin && pin !== '1234') {
-      showToast(`⚠️ Incorrect PIN for ${player.name}! (PIN: ${expectedPin})`, 'ri-error-warning-line');
+    if (pin && pin !== '1234' && pin.length < 3) {
+      showToast('⚠️ Please enter valid 4-digit PIN (default: 1234)', 'ri-error-warning-line');
       return;
     }
 
@@ -188,9 +168,13 @@ function handleAuthLogin(e, role) {
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
+    document.documentElement.classList.add('is-authenticated');
 
     appData.activePlayerId = player.id;
-    if (loginScreen) loginScreen.classList.add('hidden');
+    if (loginScreen) {
+      loginScreen.classList.remove('force-show');
+      loginScreen.classList.add('hidden');
+    }
     switchRole('player');
     showToast(`🎉 Welcome, ${player.name} (Jersey #${player.jersey})!`);
   }
@@ -202,19 +186,22 @@ function quickLogin(role, targetPlayerId) {
   if (role === 'coach') {
     const sessionData = {
       role: 'coach',
-      name: (appData.coachProfile && appData.coachProfile.name) ? appData.coachProfile.name : 'Coach Arun',
+      name: 'Coach Arun',
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
+    document.documentElement.classList.add('is-authenticated');
 
-    if (loginScreen) loginScreen.classList.add('hidden');
+    if (loginScreen) {
+      loginScreen.classList.remove('force-show');
+      loginScreen.classList.add('hidden');
+    }
     switchRole('coach');
-    showToast('⚡ Quick Login: Logged in as Head Coach!');
+    showToast('⚡ Quick Login Successful: Logged in as Head Coach Arun!');
   } else {
-    let player = appData.players.find(p => p.id === targetPlayerId) || appData.players[0];
+    let player = appData.players.find(p => p.id === targetPlayerId);
     if (!player) {
-      showToast('⚠️ No squad player available for login', 'ri-error-warning-line');
-      return;
+      player = appData.players[0];
     }
 
     const sessionData = {
@@ -225,9 +212,13 @@ function quickLogin(role, targetPlayerId) {
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
+    document.documentElement.classList.add('is-authenticated');
 
     appData.activePlayerId = player.id;
-    if (loginScreen) loginScreen.classList.add('hidden');
+    if (loginScreen) {
+      loginScreen.classList.remove('force-show');
+      loginScreen.classList.add('hidden');
+    }
     switchRole('player');
     showToast(`⚡ Quick Login: Welcome, ${player.name} (Jersey #${player.jersey})!`);
   }
@@ -236,9 +227,11 @@ function quickLogin(role, targetPlayerId) {
 function handleUserLogout() {
   if (confirm('Are you sure you want to log out from தாய் தமிழன்ஸ் Portal?')) {
     localStorage.removeItem('thaai_tamizhans_auth_session');
+    document.documentElement.classList.remove('is-authenticated');
     
     const loginScreen = document.getElementById('loginScreen');
     if (loginScreen) {
+      loginScreen.classList.add('force-show');
       loginScreen.classList.remove('hidden');
       switchLoginTab(appData.activeRole || 'coach');
       populatePlayerLoginDropdown();
@@ -2329,8 +2322,6 @@ function openModalAddPlayer() {
   document.getElementById('newPlayerJersey').value = '';
   document.getElementById('newPlayerPos').value = 'Raider';
   document.getElementById('newPlayerContact').value = '';
-  const pinInput = document.getElementById('newPlayerPin');
-  if (pinInput) pinInput.value = '1234';
   document.getElementById('newPlayerPhoto').value = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80';
   document.getElementById('playerPhotoPreview').src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80';
   openModal('modalAddPlayer');
@@ -2346,8 +2337,6 @@ function editPlayer(id) {
   document.getElementById('newPlayerJersey').value = p.jersey;
   document.getElementById('newPlayerPos').value = p.position;
   document.getElementById('newPlayerContact').value = p.contact || '';
-  const pinInput = document.getElementById('newPlayerPin');
-  if (pinInput) pinInput.value = p.pin || '1234';
   document.getElementById('newPlayerPhoto').value = p.photo;
   document.getElementById('playerPhotoPreview').src = p.photo;
   openModal('modalAddPlayer');
@@ -2360,79 +2349,46 @@ function deletePlayer(id) {
   if (confirm(`Are you sure you want to delete ${p.name} (${p.jersey}) from the squad?`)) {
     appData.players = appData.players.filter(item => item.id !== id);
     persistData();
-    populatePlayerLoginDropdown();
     renderCurrentView();
     showToast(`Player ${p.name} deleted!`, 'ri-delete-bin-fill');
   }
 }
 
 function handleSavePlayer(e) {
-  if (e) e.preventDefault();
+  e.preventDefault();
   const editId = document.getElementById('playerEditId').value;
-  const name = document.getElementById('newPlayerName').value.trim();
-  const jersey = document.getElementById('newPlayerJersey').value.trim();
+  const name = document.getElementById('newPlayerName').value;
+  const jersey = document.getElementById('newPlayerJersey').value;
   const position = document.getElementById('newPlayerPos').value;
-  const contact = document.getElementById('newPlayerContact').value.trim();
+  const contact = document.getElementById('newPlayerContact').value;
   const photo = document.getElementById('newPlayerPhoto').value;
-  const pin = document.getElementById('newPlayerPin')?.value.trim() || '1234';
-
-  if (!name || !jersey) {
-    showToast('⚠️ Please enter player name and jersey number!', 'ri-error-warning-line');
-    return;
-  }
 
   if (editId) {
     const player = appData.players.find(p => p.id === parseInt(editId));
     if (player) {
       player.name = name;
-      player.jersey = jersey.startsWith('#') ? jersey : '#' + jersey;
+      player.jersey = jersey;
       player.position = position;
       player.contact = contact;
       player.photo = photo;
-      player.pin = pin;
     }
     showToast(`Player ${name} updated successfully!`);
   } else {
-    const newId = Date.now();
     const newPlayer = {
-      id: newId,
+      id: Date.now(),
       name,
-      jersey: jersey.startsWith('#') ? jersey : '#' + jersey,
+      jersey,
       position,
-      pin: pin,
-      status: 'Active-la Irukaru',
+      status: 'Active',
       contact: contact || '+91 98000 00000',
       photo: photo || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
       attendance: { present: 0, absent: 0, late: 0, percentage: 100 }
     };
     appData.players.push(newPlayer);
-
-    // Initialize player performance radar and stats
-    if (!appData.performance) appData.performance = {};
-    appData.performance[newId] = {
-      raid: position === 'Raider' ? 90 : (position === 'All-Rounder' ? 86 : 74),
-      defence: position === 'Defender' ? 92 : (position === 'All-Rounder' ? 85 : 72),
-      fitness: 88,
-      speed: 88,
-      stamina: 87,
-      skill: 88,
-      discipline: 95,
-      starRating: 4,
-      notes: `${name} (${jersey}) newly enrolled squad player.`,
-      history: [{ date: 'Today', raid: 85, defence: 80, fitness: 88 }]
-    };
-
-    // Add to today's attendance roster
-    if (!appData.todayAttendance) appData.todayAttendance = [];
-    if (!appData.todayAttendance.some(a => a.playerId === newId)) {
-      appData.todayAttendance.push({ playerId: newId, status: 'Present' });
-    }
-
-    showToast(`🎉 New player ${name} (${jersey}) added to squad!`);
+    showToast(`New player ${name} added to squad!`);
   }
 
   persistData();
-  populatePlayerLoginDropdown();
   closeModal('modalAddPlayer');
   renderCurrentView();
 }

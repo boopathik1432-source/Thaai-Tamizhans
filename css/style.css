@@ -2928,12 +2928,23 @@ h1, h2, h3, h4, h5, h6 {
   padding: 20px;
   overflow-y: auto;
   opacity: 1;
-  transition: opacity 0.4s ease, visibility 0.4s ease;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
+
+/* 🚀 ZERO-FLICKER: If authenticated session exists, instantly hide login screen without any transition or paint */
+html.is-authenticated .login-screen-overlay:not(.force-show) {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: none !important;
+}
+
 .login-screen-overlay.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .login-card-3d {
