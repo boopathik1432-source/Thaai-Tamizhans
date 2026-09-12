@@ -1,24 +1,19 @@
 {
   "name": "thaai-tamizhans-kabaddi",
   "version": "1.0.0",
-  "description": "Official Thaai Tamizhans Kabaddi Club Portal with Node.js and Neon PostgreSQL Backend",
-  "main": "server.js",
+  "description": "Official Squad, Coach & Match Management Portal for Thaai Tamizhans Kabaddi Club with Firebase Real-Time Backend",
+  "main": "index.html",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
-  },
-  "dependencies": {
-    "@neondatabase/serverless": "^0.10.4",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.2"
+    "start": "npx http-server . -p 8080 -c-1",
+    "dev": "npx http-server . -p 8080 -c-1"
   },
   "keywords": [
     "kabaddi",
     "thaai-tamizhans",
-    "neon",
-    "postgresql",
-    "vercel"
+    "firebase",
+    "firestore",
+    "pro-kabaddi",
+    "sports-portal"
   ],
   "author": "Thaai Tamizhans Kabaddi Club",
   "license": "ISC"

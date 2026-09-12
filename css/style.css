@@ -1123,12 +1123,14 @@ h1, h2, h3, h4, h5, h6 {
   flex-shrink: 0;
 }
 
-/* Cloud Sync Status Pill */
+/* Firebase Cloud Sync Status Pill */
 .cloud-sync-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-color);
   padding: 0 14px;
   height: 42px;
@@ -1137,7 +1139,7 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   color: #cbd5e1;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
 }
 .cloud-sync-pill:hover {
@@ -1152,18 +1154,27 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 0 10px #10b981;
   transition: all 0.3s ease;
 }
+.sync-dot.live {
+  background: #10b981;
+  box-shadow: 0 0 12px #10b981;
+  animation: pulseLive 2s infinite ease-in-out;
+}
 .sync-dot.syncing {
   background: #00f0ff;
   box-shadow: 0 0 12px #00f0ff;
-  animation: pulseSync 0.9s infinite alternate;
+  animation: pulseSync 0.8s infinite alternate;
 }
 .sync-dot.offline {
   background: #f59e0b;
   box-shadow: 0 0 8px #f59e0b;
 }
+@keyframes pulseLive {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.65; transform: scale(1.15); box-shadow: 0 0 16px #10b981; }
+}
 @keyframes pulseSync {
-  from { opacity: 0.35; transform: scale(0.85); }
-  to { opacity: 1; transform: scale(1.25); }
+  from { opacity: 0.4; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1.25); box-shadow: 0 0 16px #00f0ff; }
 }
 
 /* Role Switcher Pill */

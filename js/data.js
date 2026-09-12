@@ -283,87 +283,6 @@ const INITIAL_KABADDI_DATA = {
   ]
 };
 
-let cloudSyncStatus = {
-  state: 'idle', // 'idle' | 'syncing' | 'synced' | 'offline'
-  lastSync: null
-};
-
-let cloudSyncDebounceTimer = null;
-
-function updateCloudSyncBadge(state, customLabel = null) {
-  cloudSyncStatus.state = state;
-  const dot = document.getElementById('cloudSyncDot');
-  const label = document.getElementById('cloudSyncLabel');
-  if (!dot || !label) return;
-
-  dot.className = 'sync-dot ' + state;
-  if (state === 'syncing') {
-    label.innerText = customLabel || '🔄 Syncing...';
-  } else if (state === 'synced') {
-    label.innerText = customLabel || '☁️ Neon Synced';
-  } else if (state === 'offline') {
-    label.innerText = customLabel || '💾 Local Cache';
-  } else {
-    label.innerText = customLabel || '☁️ Neon Cloud';
-  }
-}
-
-async function syncToCloudDatabase(data) {
-  clearTimeout(cloudSyncDebounceTimer);
-  cloudSyncDebounceTimer = setTimeout(async () => {
-    try {
-      updateCloudSyncBadge('syncing');
-      const res = await fetch('/api/data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data })
-      });
-      const json = await res.json();
-      if (json && json.success) {
-        cloudSyncStatus.state = 'synced';
-        cloudSyncStatus.lastSync = new Date();
-        updateCloudSyncBadge('synced');
-      } else {
-        updateCloudSyncBadge('offline');
-      }
-    } catch (err) {
-      console.warn('Cloud sync skipped (offline or static preview mode):', err.message);
-      updateCloudSyncBadge('offline');
-    }
-  }, 500);
-}
-
-async function fetchCloudData() {
-  try {
-    updateCloudSyncBadge('syncing');
-    const res = await fetch('/api/data');
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    if (json && json.success && json.data && json.data.players && json.data.players.length > 0) {
-      appData = json.data;
-      localStorage.setItem('HOME_KABADDI_APP_DATA_TANGLISH_V1', JSON.stringify(appData));
-      cloudSyncStatus.state = 'synced';
-      cloudSyncStatus.lastSync = new Date(json.updatedAt || Date.now());
-      updateCloudSyncBadge('synced');
-      if (typeof renderCurrentView === 'function') renderCurrentView();
-      if (typeof renderAppShell === 'function') renderAppShell();
-      if (typeof renderNotifications === 'function') renderNotifications();
-      console.log('✅ Synchronized state from Neon PostgreSQL Cloud DB');
-    } else {
-      updateCloudSyncBadge('synced');
-    }
-  } catch (err) {
-    console.log('Using local offline cache:', err.message);
-    updateCloudSyncBadge('offline');
-  }
-}
-
-function manualSyncCloud() {
-  showToast('🔄 Synchronizing with Neon Cloud Database...', 'ri-refresh-line');
-  syncToCloudDatabase(appData);
-  fetchCloudData();
-}
-
 function getAppData() {
   const saved = localStorage.getItem('HOME_KABADDI_APP_DATA_TANGLISH_V1');
   if (saved) {
@@ -404,8 +323,6 @@ function saveAppData(data) {
       });
     }
     localStorage.setItem('HOME_KABADDI_APP_DATA_TANGLISH_V1', JSON.stringify(clone));
-    // Asynchronously push to Neon PostgreSQL Cloud Database
-    syncToCloudDatabase(clone);
   } catch (e) {
     console.warn('LocalStorage quota limit reached, saving lean data:', e);
     try {
@@ -425,11 +342,57 @@ function saveAppData(data) {
         }));
       }
       localStorage.setItem('HOME_KABADDI_APP_DATA_TANGLISH_V1', JSON.stringify(lean));
-      syncToCloudDatabase(lean);
     } catch (err) {
       console.error('Critical storage error:', err);
     }
   }
 }
+// ----------------------------------------------------
+// FIREBASE REAL-TIME CLOUD SYNC CONTROLS
+// ----------------------------------------------------
+let cloudSyncStatus = {
+  state: 'live', // 'idle' | 'syncing' | 'live' | 'offline'
+  lastSync: new Date()
+};
 
+function updateCloudSyncBadge(state, customLabel = null) {
+  cloudSyncStatus.state = state;
+  const dot = document.getElementById('cloudSyncDot');
+  const label = document.getElementById('cloudSyncLabel');
+  if (!dot || !label) return;
 
+  dot.className = 'sync-dot ' + (state === 'synced' ? 'live' : state);
+  if (state === 'syncing') {
+    label.innerText = customLabel || '🔄 Syncing...';
+  } else if (state === 'live' || state === 'synced') {
+    label.innerText = customLabel || '🟢 Firebase Live';
+  } else if (state === 'offline') {
+    label.innerText = customLabel || '💾 Local Cache';
+  } else {
+    label.innerText = customLabel || '🟢 Firebase Live';
+  }
+}
+
+function manualSyncCloud() {
+  if (typeof showToast === 'function') {
+    showToast('🔄 Synchronizing with Firebase Real-Time Cloud...', 'ri-refresh-line');
+  }
+  updateCloudSyncBadge('syncing', 'Connecting...');
+  
+  if (window.FirebaseSync) {
+    if (!window.FirebaseSync.isListening) {
+      window.initFirebaseSyncIntegration();
+    } else {
+      setTimeout(() => {
+        updateCloudSyncBadge('live', '🟢 Firebase Live');
+        if (typeof showToast === 'function') {
+          showToast('✅ Firebase Real-Time Cloud in sync!', 'ri-checkbox-circle-line');
+        }
+      }, 600);
+    }
+  } else {
+    setTimeout(() => {
+      updateCloudSyncBadge('offline', '💾 Local Cache');
+    }, 800);
+  }
+}

@@ -152,10 +152,10 @@
       </div>
 
       <div class="top-actions">
-        <!-- Neon PostgreSQL Cloud Sync Pill -->
-        <div class="cloud-sync-pill" id="cloudSyncBadge" onclick="manualSyncCloud()" title="Neon PostgreSQL Cloud Connected (Click to Force Sync)">
-          <span class="sync-dot" id="cloudSyncDot"></span>
-          <span id="cloudSyncLabel">☁️ Neon Cloud</span>
+        <!-- Firebase Real-Time Cloud Sync Pill -->
+        <div class="cloud-sync-pill" id="cloudSyncBadge" onclick="manualSyncCloud()" title="Firebase Real-Time Connected (Click to Reconnect / Force Sync)">
+          <span class="sync-dot live" id="cloudSyncDot"></span>
+          <span id="cloudSyncLabel">🟢 Firebase Live</span>
         </div>
 
         <!-- Theme Selector (10 Visual & 3D Animated Themes) -->
@@ -811,6 +811,9 @@
     </div>
   </div>
 
+  <!-- Firebase Modular Web SDK v10 and Real-Time Service -->
+  <script type="module" src="js/firebase-config.js"></script>
+  <script type="module" src="js/firebase-service.js"></script>
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
 </body>

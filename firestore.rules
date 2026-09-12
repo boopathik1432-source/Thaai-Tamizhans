@@ -1,0 +1,110 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isCoach() {
+      return isAuthenticated() && (
+        getUserData().role == 'coach' || 
+        request.auth.token.role == 'coach'
+      );
+    }
+
+    function isPlayer() {
+      return isAuthenticated() && (
+        getUserData().role == 'player' || 
+        request.auth.token.role == 'player'
+      );
+    }
+
+    function getPlayerId() {
+      return getUserData().playerId;
+    }
+
+    // 1. Users Collection: Self-read/write and Coach read/write
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isCoach());
+    }
+
+    // 2. Players Collection: Public team read, Coach write only
+    match /players/{playerId} {
+      allow read: if isAuthenticated();
+      allow write: if isCoach();
+    }
+
+    // 3. Today Practice Singleton: Public team read, Coach write only
+    match /todayPractice/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isCoach();
+    }
+
+    // 4. Practice Calendar: Public team read, Coach write only
+    match /practiceCalendar/{sessionId} {
+      allow read: if isAuthenticated();
+      allow write: if isCoach();
+    }
+
+    // 5. Match Notices: Public team read, Coach write only
+    match /matchNotices/{noticeId} {
+      allow read: if isAuthenticated();
+      allow write: if isCoach();
+    }
+
+    // 6. Instructions: Coach full access, Player can only read instructions assigned to them
+    match /instructions/{instructionId} {
+      allow read: if isCoach() || (isPlayer() && resource.data.playerId == getPlayerId());
+      allow write: if isCoach();
+    }
+
+    // 7. Performance: Coach full access, Player can only read their own performance matrix
+    match /performance/{playerId} {
+      allow read: if isCoach() || (isPlayer() && (resource.data.playerId == getPlayerId() || playerId == string(getPlayerId())));
+      allow write: if isCoach();
+    }
+
+    // 8. Attendance: Public team read, Coach write only
+    match /attendance/{dateStr} {
+      allow read: if isAuthenticated();
+      allow write: if isCoach();
+    }
+
+    // 9. Announcements: Public team read, Coach full write, Players can update readBy receipts
+    match /announcements/{messageId} {
+      allow read: if isAuthenticated();
+      allow create, delete: if isCoach();
+      allow update: if isCoach() || (
+        isPlayer() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])
+      );
+    }
+
+    // 10. Squad Vault Files: Public team read, Coach write only
+    match /files/{fileId} {
+      allow read: if isAuthenticated();
+      allow write: if isCoach();
+    }
+
+    // 11. Notifications: Public team read, Coach write, Players update readBy
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated() && (
+        resource.data.target == 'all' || 
+        isCoach() || 
+        (isPlayer() && resource.data.playerId == getPlayerId())
+      );
+      allow create, delete: if isCoach();
+      allow update: if isCoach() || (
+        isPlayer() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])
+      );
+    }
+  }
+}
