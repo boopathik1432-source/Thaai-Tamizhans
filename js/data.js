@@ -323,6 +323,11 @@ function saveAppData(data) {
       });
     }
     localStorage.setItem('HOME_KABADDI_APP_DATA_TANGLISH_V1', JSON.stringify(clone));
+    
+    // Auto-sync real-time changes to Firebase Cloud Firestore
+    if (window.FirebaseSync && typeof window.FirebaseSync.uploadData === 'function') {
+      window.FirebaseSync.uploadData(clone);
+    }
   } catch (e) {
     console.warn('LocalStorage quota limit reached, saving lean data:', e);
     try {
@@ -342,57 +347,15 @@ function saveAppData(data) {
         }));
       }
       localStorage.setItem('HOME_KABADDI_APP_DATA_TANGLISH_V1', JSON.stringify(lean));
+      
+      // Auto-sync real-time changes to Firebase Cloud Firestore
+      if (window.FirebaseSync && typeof window.FirebaseSync.uploadData === 'function') {
+        window.FirebaseSync.uploadData(lean);
+      }
     } catch (err) {
       console.error('Critical storage error:', err);
     }
   }
 }
-// ----------------------------------------------------
-// FIREBASE REAL-TIME CLOUD SYNC CONTROLS
-// ----------------------------------------------------
-let cloudSyncStatus = {
-  state: 'live', // 'idle' | 'syncing' | 'live' | 'offline'
-  lastSync: new Date()
-};
 
-function updateCloudSyncBadge(state, customLabel = null) {
-  cloudSyncStatus.state = state;
-  const dot = document.getElementById('cloudSyncDot');
-  const label = document.getElementById('cloudSyncLabel');
-  if (!dot || !label) return;
 
-  dot.className = 'sync-dot ' + (state === 'synced' ? 'live' : state);
-  if (state === 'syncing') {
-    label.innerText = customLabel || '🔄 Syncing...';
-  } else if (state === 'live' || state === 'synced') {
-    label.innerText = customLabel || '🟢 Firebase Live';
-  } else if (state === 'offline') {
-    label.innerText = customLabel || '💾 Local Cache';
-  } else {
-    label.innerText = customLabel || '🟢 Firebase Live';
-  }
-}
-
-function manualSyncCloud() {
-  if (typeof showToast === 'function') {
-    showToast('🔄 Synchronizing with Firebase Real-Time Cloud...', 'ri-refresh-line');
-  }
-  updateCloudSyncBadge('syncing', 'Connecting...');
-  
-  if (window.FirebaseSync) {
-    if (!window.FirebaseSync.isListening) {
-      window.initFirebaseSyncIntegration();
-    } else {
-      setTimeout(() => {
-        updateCloudSyncBadge('live', '🟢 Firebase Live');
-        if (typeof showToast === 'function') {
-          showToast('✅ Firebase Real-Time Cloud in sync!', 'ri-checkbox-circle-line');
-        }
-      }, 600);
-    }
-  } else {
-    setTimeout(() => {
-      updateCloudSyncBadge('offline', '💾 Local Cache');
-    }, 800);
-  }
-}

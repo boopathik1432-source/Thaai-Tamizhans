@@ -18,110 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderCurrentView();
   renderNotifications();
   setupGlobalPasteHandler();
-  initFirebaseSyncIntegration();
 });
-
-// ----------------------------------------------------
-// FIREBASE REAL-TIME BACKEND INTEGRATION
-// ----------------------------------------------------
-function initFirebaseSyncIntegration() {
-  if (!window.FirebaseSync) {
-    setTimeout(initFirebaseSyncIntegration, 150);
-    return;
-  }
-
-  window.FirebaseSync.startRealtimeSync({
-    onDataUpdate: (collectionKey, data) => {
-      handleFirebaseDataUpdate(collectionKey, data);
-    },
-    onStatusChange: (status, message) => {
-      if (typeof updateCloudSyncBadge === 'function') {
-        updateCloudSyncBadge(status, message);
-      }
-    }
-  });
-}
-window.initFirebaseSyncIntegration = initFirebaseSyncIntegration;
-
-function handleFirebaseDataUpdate(key, data) {
-  if (!data) return;
-  let changed = false;
-
-  switch (key) {
-    case 'players':
-      if (Array.isArray(data) && data.length > 0) {
-        appData.players = data;
-        populatePlayerLoginDropdown();
-        changed = true;
-      }
-      break;
-    case 'todayPractice':
-      if (data && typeof data === 'object' && data.title) {
-        appData.todayPractice = data;
-        changed = true;
-      }
-      break;
-    case 'practiceCalendar':
-      if (Array.isArray(data)) {
-        appData.practiceCalendar = data;
-        changed = true;
-      }
-      break;
-    case 'instructions':
-      if (Array.isArray(data)) {
-        appData.instructions = data;
-        changed = true;
-      }
-      break;
-    case 'matchNotices':
-      if (Array.isArray(data)) {
-        appData.matchNotices = data;
-        changed = true;
-      }
-      break;
-    case 'performance':
-      if (data && typeof data === 'object') {
-        appData.performance = data;
-        changed = true;
-      }
-      break;
-    case 'attendanceRecords':
-      if (Array.isArray(data)) {
-        const todayStr = new Date().toISOString().split('T')[0];
-        const todayRec = data.find(r => r.date === todayStr);
-        if (todayRec && Array.isArray(todayRec.records)) {
-          appData.todayAttendance = todayRec.records;
-        }
-        changed = true;
-      }
-      break;
-    case 'messages':
-      if (Array.isArray(data)) {
-        appData.messages = data;
-        changed = true;
-      }
-      break;
-    case 'files':
-      if (Array.isArray(data)) {
-        appData.files = data;
-        changed = true;
-      }
-      break;
-    case 'notifications':
-      if (Array.isArray(data)) {
-        appData.notifications = data;
-        changed = true;
-      }
-      break;
-  }
-
-  if (changed) {
-    saveAppData(appData);
-    if (typeof renderCurrentView === 'function') renderCurrentView();
-    if (typeof renderAppShell === 'function') renderAppShell();
-    if (typeof renderNotifications === 'function') renderNotifications();
-  }
-}
 
 // ----------------------------------------------------
 // 0. AUTHENTICATION & LOGIN SCREEN SYSTEM
@@ -241,10 +138,6 @@ function handleAuthLogin(e, role) {
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
 
-    if (window.FirebaseSync) {
-      window.FirebaseSync.login('coach', { name: username }, pin);
-    }
-
     if (loginScreen) loginScreen.classList.add('hidden');
     switchRole('coach');
     showToast(`🎉 Welcome back, ${username}! (தலைமை பயிற்சியாளர்)`);
@@ -268,10 +161,6 @@ function handleAuthLogin(e, role) {
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
 
-    if (window.FirebaseSync) {
-      window.FirebaseSync.login('player', { playerId: player.id, name: player.name, jersey: player.jersey }, pin);
-    }
-
     appData.activePlayerId = player.id;
     if (loginScreen) loginScreen.classList.add('hidden');
     switchRole('player');
@@ -289,10 +178,6 @@ function quickLogin(role, targetPlayerId) {
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
-
-    if (window.FirebaseSync) {
-      window.FirebaseSync.login('coach', { name: 'Coach Arun' }, '1234');
-    }
 
     if (loginScreen) loginScreen.classList.add('hidden');
     switchRole('coach');
@@ -312,10 +197,6 @@ function quickLogin(role, targetPlayerId) {
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
 
-    if (window.FirebaseSync) {
-      window.FirebaseSync.login('player', { playerId: player.id, name: player.name, jersey: player.jersey }, '1234');
-    }
-
     appData.activePlayerId = player.id;
     if (loginScreen) loginScreen.classList.add('hidden');
     switchRole('player');
@@ -326,9 +207,6 @@ function quickLogin(role, targetPlayerId) {
 function handleUserLogout() {
   if (confirm('Are you sure you want to log out from தாய் தமிழன்ஸ் Portal?')) {
     localStorage.removeItem('thaai_tamizhans_auth_session');
-    if (window.FirebaseSync) {
-      window.FirebaseSync.logout();
-    }
     
     const loginScreen = document.getElementById('loginScreen');
     if (loginScreen) {
@@ -2448,9 +2326,6 @@ function deletePlayer(id) {
 
   if (confirm(`Are you sure you want to delete ${p.name} (${p.jersey}) from the squad?`)) {
     appData.players = appData.players.filter(item => item.id !== id);
-    if (window.FirebaseSync) {
-      window.FirebaseSync.deletePlayer(id);
-    }
     persistData();
     renderCurrentView();
     showToast(`Player ${p.name} deleted!`, 'ri-delete-bin-fill');
@@ -2466,8 +2341,6 @@ function handleSavePlayer(e) {
   const contact = document.getElementById('newPlayerContact').value;
   const photo = document.getElementById('newPlayerPhoto').value;
 
-  let targetPlayer = null;
-
   if (editId) {
     const player = appData.players.find(p => p.id === parseInt(editId));
     if (player) {
@@ -2476,7 +2349,6 @@ function handleSavePlayer(e) {
       player.position = position;
       player.contact = contact;
       player.photo = photo;
-      targetPlayer = player;
     }
     showToast(`Player ${name} updated successfully!`);
   } else {
@@ -2491,12 +2363,7 @@ function handleSavePlayer(e) {
       attendance: { present: 0, absent: 0, late: 0, percentage: 100 }
     };
     appData.players.push(newPlayer);
-    targetPlayer = newPlayer;
     showToast(`New player ${name} added to squad!`);
-  }
-
-  if (window.FirebaseSync && targetPlayer) {
-    window.FirebaseSync.savePlayer(targetPlayer);
   }
 
   persistData();
@@ -2965,10 +2832,6 @@ function handleSaveTodayPractice(e) {
     sections: sections.length === 6 ? sections : (appData.todayPractice?.sections || [])
   };
 
-  if (window.FirebaseSync) {
-    window.FirebaseSync.saveTodayPractice(appData.todayPractice);
-  }
-
   // Broadcast automated notification to players
   addAppNotification({
     title: `⚡ Today's Practice Updated: ${title}`,
@@ -3043,8 +2906,6 @@ function handleSavePractice(e) {
     appData.practiceCalendar = [];
   }
 
-  let targetSession = null;
-
   if (editId) {
     const session = appData.practiceCalendar.find(p => p.id === parseInt(editId));
     if (session) {
@@ -3056,7 +2917,6 @@ function handleSavePractice(e) {
       session.focus = focusVal;
       session.drills = drillsVal;
       session.coachNotes = notesVal;
-      targetSession = session;
     }
     showToast(`Practice session on ${dateVal} updated!`);
   } else {
@@ -3072,7 +2932,6 @@ function handleSavePractice(e) {
       coachNotes: notesVal
     };
     appData.practiceCalendar.push(newSession);
-    targetSession = newSession;
 
     // Broadcast automated notification to players
     addAppNotification({
@@ -3085,10 +2944,6 @@ function handleSavePractice(e) {
     });
 
     showToast(`Practice for ${dateVal} scheduled successfully!`);
-  }
-
-  if (window.FirebaseSync && targetSession) {
-    window.FirebaseSync.savePracticeSession(targetSession);
   }
 
   // Set selected date to this date so inspector opens it
@@ -3105,9 +2960,6 @@ function handleSavePractice(e) {
 function deleteScheduledPractice(id) {
   if (confirm('Are you sure you want to delete this scheduled practice session?')) {
     appData.practiceCalendar = (appData.practiceCalendar || []).filter(p => p.id !== id);
-    if (window.FirebaseSync) {
-      window.FirebaseSync.deletePracticeSession(id);
-    }
     persistData();
     renderCurrentView();
     showToast('Practice session removed from calendar!', 'ri-delete-bin-fill');
@@ -3326,9 +3178,6 @@ function deleteMatchNotice(id) {
   }
   if (confirm('Are you sure you want to delete this match notice poster?')) {
     appData.matchNotices = appData.matchNotices.filter(item => item.id !== id);
-    if (window.FirebaseSync) {
-      window.FirebaseSync.deleteMatchNotice(id);
-    }
     persistData();
     renderCurrentView();
     showToast('🗑️ Match Notice deleted successfully!', 'ri-delete-bin-fill');
@@ -3351,8 +3200,6 @@ function handleCreateNotice(e) {
   const location = document.getElementById('noticeLocation').value.trim();
   const message = document.getElementById('noticeMessage').value.trim();
 
-  let targetNotice = null;
-
   if (editId) {
     const notice = appData.matchNotices.find(n => n.id === parseInt(editId));
     if (notice) {
@@ -3362,7 +3209,6 @@ function handleCreateNotice(e) {
       notice.time = time;
       notice.location = location;
       notice.message = message;
-      targetNotice = notice;
     }
     showToast('✅ Match Notice updated successfully!', 'ri-checkbox-circle-fill');
   } else {
@@ -3378,7 +3224,6 @@ function handleCreateNotice(e) {
     };
     if (!appData.matchNotices) appData.matchNotices = [];
     appData.matchNotices.unshift(newNotice);
-    targetNotice = newNotice;
 
     // Broadcast automated notification to players
     addAppNotification({
@@ -3390,11 +3235,7 @@ function handleCreateNotice(e) {
       actionView: 'match-notices'
     });
 
-    showToast('📣 New Match Notice published successfully!', 'ri-megaphone-fill');
-  }
-
-  if (window.FirebaseSync && targetNotice) {
-    window.FirebaseSync.saveMatchNotice(targetNotice, image);
+    showToast('📢 New Match Notice published successfully!', 'ri-megaphone-fill');
   }
 
   persistData();
@@ -3430,9 +3271,6 @@ function editInstruction(id) {
 function deleteInstruction(id) {
   if (confirm('Delete this player instruction?')) {
     appData.instructions = appData.instructions.filter(i => i.id !== id);
-    if (window.FirebaseSync) {
-      window.FirebaseSync.deleteInstruction(id);
-    }
     persistData();
     renderCurrentView();
     showToast('Instruction deleted!');
@@ -3449,8 +3287,6 @@ function handleSendInstruction(e) {
   const priority = document.getElementById('instPriority').value;
   const date = document.getElementById('instDate').value;
 
-  let targetInst = null;
-
   if (editId) {
     const inst = appData.instructions.find(i => i.id === parseInt(editId));
     if (inst) {
@@ -3460,7 +3296,6 @@ function handleSendInstruction(e) {
       inst.instruction = instruction;
       inst.priority = priority;
       inst.date = date;
-      targetInst = inst;
     }
     showToast('Instruction updated!');
   } else {
@@ -3475,7 +3310,6 @@ function handleSendInstruction(e) {
       status: 'Active'
     };
     appData.instructions.unshift(newInst);
-    targetInst = newInst;
 
     // Send target player notification
     addAppNotification({
@@ -3489,10 +3323,6 @@ function handleSendInstruction(e) {
     });
 
     showToast(`Instruction sent to ${player.name}!`);
-  }
-
-  if (window.FirebaseSync && targetInst) {
-    window.FirebaseSync.saveInstruction(targetInst);
   }
 
   persistData();
@@ -3664,10 +3494,6 @@ function savePerformanceRecord(playerId) {
     fitness: perf.fitness
   });
   if (perf.history.length > 5) perf.history.pop();
-
-  if (window.FirebaseSync) {
-    window.FirebaseSync.savePerformance(playerId, perf);
-  }
 
   persistData();
 
@@ -4072,14 +3898,6 @@ function toggleAttendance(playerId, newStatus, dateStr = null) {
     const rec = appData.todayAttendance.find(a => a.playerId === playerId);
     if (rec) rec.status = newStatus;
     else appData.todayAttendance.push({ playerId, status: newStatus });
-  }
-
-  if (window.FirebaseSync) {
-    const records = Object.entries(attByDate[targetDate] || {}).map(([pId, st]) => ({
-      playerId: Number(pId) || pId,
-      status: st
-    }));
-    window.FirebaseSync.saveAttendance(targetDate, records);
   }
 
   const player = appData.players.find(p => p.id === playerId) || { name: 'Player' };
@@ -4536,9 +4354,6 @@ function renderCommunicationHTML() {
 function deleteAnnouncement(id) {
   if (confirm('Delete this announcement message?')) {
     appData.messages = appData.messages.filter(m => m.id !== id);
-    if (window.FirebaseSync) {
-      window.FirebaseSync.deleteAnnouncement(id);
-    }
     persistData();
     renderCurrentView();
     showToast('Announcement deleted!');
@@ -4961,10 +4776,6 @@ async function handleUploadFile(e) {
     actionView: 'files'
   });
 
-  if (window.FirebaseSync) {
-    window.FirebaseSync.saveFile(newFile, uploadedFileTempData?.file);
-  }
-
   persistData();
   closeModal('modalUploadFile');
   renderCurrentView();
@@ -5081,9 +4892,6 @@ async function deleteFile(id) {
     appData.files = appData.files.filter(f => f.id !== id);
     activeMediaObjectUrls.delete(id);
     await deleteMediaBlobFromDB(id);
-    if (window.FirebaseSync) {
-      window.FirebaseSync.deleteFile(id);
-    }
     persistData();
     renderCurrentView();
     showToast(`🗑️ "${name}" deleted!`);
@@ -5528,10 +5336,6 @@ function handleSendAnnouncement(e) {
     actionView: 'coach-dashboard'
   });
 
-  if (window.FirebaseSync) {
-    window.FirebaseSync.saveAnnouncement(newMsg);
-  }
-
   persistData();
   closeModal('modalAnnouncement');
   renderCurrentView();
@@ -5575,10 +5379,6 @@ function addAppNotification({
   appData.notifications.unshift(notif);
   if (appData.notifications.length > 50) {
     appData.notifications = appData.notifications.slice(0, 50);
-  }
-
-  if (window.FirebaseSync) {
-    window.FirebaseSync.addNotification(notif);
   }
 
   persistData();

@@ -152,11 +152,12 @@
       </div>
 
       <div class="top-actions">
-        <!-- Firebase Real-Time Cloud Sync Pill -->
-        <div class="cloud-sync-pill" id="cloudSyncBadge" onclick="manualSyncCloud()" title="Firebase Real-Time Connected (Click to Reconnect / Force Sync)">
-          <span class="sync-dot live" id="cloudSyncDot"></span>
-          <span id="cloudSyncLabel">🟢 Firebase Live</span>
-        </div>
+        <!-- Firebase Live Real-Time Cloud Sync Badge -->
+        <button type="button" class="firebase-live-badge status-connecting" id="firebaseLiveBadge" onclick="window.FirebaseSync && window.FirebaseSync.forceSyncNow()" title="Firebase Cloud Live Sync Status (Click pannina instant-ah cloud sync aagum)">
+          <span class="fb-dot"></span>
+          <span class="fb-label">Connecting...</span>
+          <i class="ri-cloud-line fb-cloud-icon"></i>
+        </button>
 
         <!-- Theme Selector (10 Visual & 3D Animated Themes) -->
         <div class="theme-picker-wrap">
@@ -811,9 +812,12 @@
     </div>
   </div>
 
-  <!-- Firebase Modular Web SDK v10 and Real-Time Service -->
-  <script type="module" src="js/firebase-config.js"></script>
-  <script type="module" src="js/firebase-service.js"></script>
+  <!-- Firebase SDKs (Cloud Firestore & Analytics) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+  <script src="js/firebase-service.js"></script>
+
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
 </body>

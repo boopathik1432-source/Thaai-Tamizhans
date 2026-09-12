@@ -1123,60 +1123,6 @@ h1, h2, h3, h4, h5, h6 {
   flex-shrink: 0;
 }
 
-/* Firebase Cloud Sync Status Pill */
-.cloud-sync-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-color);
-  padding: 0 14px;
-  height: 42px;
-  border-radius: 21px;
-  font-size: 0.80rem;
-  font-weight: 700;
-  color: #cbd5e1;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
-}
-.cloud-sync-pill:hover {
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 15px rgba(0, 242, 254, 0.25);
-}
-.sync-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 10px #10b981;
-  transition: all 0.3s ease;
-}
-.sync-dot.live {
-  background: #10b981;
-  box-shadow: 0 0 12px #10b981;
-  animation: pulseLive 2s infinite ease-in-out;
-}
-.sync-dot.syncing {
-  background: #00f0ff;
-  box-shadow: 0 0 12px #00f0ff;
-  animation: pulseSync 0.8s infinite alternate;
-}
-.sync-dot.offline {
-  background: #f59e0b;
-  box-shadow: 0 0 8px #f59e0b;
-}
-@keyframes pulseLive {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.65; transform: scale(1.15); box-shadow: 0 0 16px #10b981; }
-}
-@keyframes pulseSync {
-  from { opacity: 0.4; transform: scale(0.85); }
-  to { opacity: 1; transform: scale(1.25); box-shadow: 0 0 16px #00f0ff; }
-}
-
 /* Role Switcher Pill */
 .role-switcher {
   background: rgba(0, 0, 0, 0.35);
@@ -3103,3 +3049,292 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(0, 242, 254, 0.14);
   border-color: var(--accent-cyan);
 }
+
+/* ===================================================
+   FIREBASE REAL-TIME LIVE SYNC BADGE (GLASSMORPHIC)
+   =================================================== */
+.firebase-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 13px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.firebase-live-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+/* Status: Live */
+.firebase-live-badge.status-live {
+  background: rgba(0, 255, 136, 0.08);
+  border-color: rgba(0, 255, 136, 0.35);
+  color: #a7f3d0;
+}
+.firebase-live-badge.status-live:hover {
+  border-color: #00ff88;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+/* Status: Connecting / Syncing */
+.firebase-live-badge.status-connecting,
+.firebase-live-badge.status-syncing {
+  background: rgba(0, 242, 254, 0.08);
+  border-color: rgba(0, 242, 254, 0.35);
+  color: #bae6fd;
+}
+
+/* Status: Warning / Offline / Error */
+.firebase-live-badge.status-warning {
+  background: rgba(250, 204, 21, 0.1);
+  border-color: rgba(250, 204, 21, 0.4);
+  color: #fef08a;
+}
+.firebase-live-badge.status-offline,
+.firebase-live-badge.status-error {
+  background: rgba(244, 63, 94, 0.1);
+  border-color: rgba(244, 63, 94, 0.35);
+  color: #fecdd3;
+}
+
+/* Glowing Indicator Dot */
+.firebase-live-badge .fb-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #94a3b8;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.firebase-live-badge.status-live .fb-dot {
+  background: #00ff88;
+  box-shadow: 0 0 10px #00ff88;
+  animation: fbPulse 1.8s infinite;
+}
+
+.firebase-live-badge.status-connecting .fb-dot,
+.firebase-live-badge.status-syncing .fb-dot {
+  background: #00f2fe;
+  box-shadow: 0 0 10px #00f2fe;
+  animation: fbPulse 1.2s infinite;
+}
+
+.firebase-live-badge.status-warning .fb-dot {
+  background: #facc15;
+  box-shadow: 0 0 10px #facc15;
+}
+
+.firebase-live-badge.status-error .fb-dot,
+.firebase-live-badge.status-offline .fb-dot {
+  background: #f43f5e;
+  box-shadow: 0 0 8px #f43f5e;
+}
+
+.firebase-live-badge .fb-cloud-icon {
+  font-size: 0.95rem;
+  opacity: 0.8;
+  transition: transform 0.4s ease;
+}
+
+.firebase-live-badge.status-syncing .fb-cloud-icon {
+  animation: fbSpin 1s linear infinite;
+}
+
+@keyframes fbPulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; filter: drop-shadow(0 0 6px currentColor); }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+@keyframes fbSpin {
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .firebase-live-badge .fb-label {
+    display: none;
+  }
+  .firebase-live-badge {
+    padding: 6px 9px;
+  }
+}
+
+/* ===================================================
+   DATABASE TABLE MANAGER MODAL
+   =================================================== */
+.modal-backdrop-custom {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(4, 8, 20, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-backdrop-custom.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.db-manager-card {
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 16, 32, 0.98) 100%);
+  border: 1px solid rgba(0, 242, 254, 0.25);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 242, 254, 0.15);
+  border-radius: 20px;
+  overflow: hidden;
+  animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalScaleUp {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.db-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.db-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 85, 0, 0.12);
+  border: 1px solid rgba(255, 85, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-close-custom {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+}
+
+.btn-close-custom:hover {
+  background: rgba(244, 63, 94, 0.2);
+  color: #f43f5e;
+  border-color: #f43f5e;
+}
+
+.db-status-banner {
+  margin: 16px 24px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(0, 242, 254, 0.06);
+  border: 1px solid rgba(0, 242, 254, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.db-tables-list-header {
+  padding: 0 24px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.8px;
+}
+
+.db-tables-grid {
+  padding: 0 24px;
+  overflow-y: auto;
+  max-height: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.db-table-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.2s ease;
+}
+
+.db-table-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(0, 242, 254, 0.3);
+  transform: translateX(3px);
+}
+
+.db-table-badge {
+  font-family: monospace;
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(0, 242, 254, 0.12);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 242, 254, 0.25);
+}
+
+.db-count-pill {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 12px;
+  background: rgba(0, 255, 136, 0.12);
+  color: #a7f3d0;
+  border: 1px solid rgba(0, 255, 136, 0.25);
+}
+
+.db-modal-actions {
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+

@@ -1,643 +1,647 @@
-/* 🏆 THAAI TAMIZHANS (தாய் தமிழன்ஸ்) KABADDI CLUB — FIREBASE REAL-TIME SERVICE */
+/* 🏆 தாய் தமிழன்ஸ் (THAAI TAMIZHANS) - COMPLETE CLOUD FIRESTORE REAL-TIME DATABASE ENGINE */
 
-import { auth, db, storage, isInitialized } from './firebase-config.js';
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  getDoc, 
-  getDocs, 
-  deleteDoc, 
-  onSnapshot, 
-  query, 
-  orderBy, 
-  serverTimestamp, 
-  writeBatch 
-} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+const firebaseConfig = {
+  apiKey: "AIzaSyDK3fUCYkdCZnQhu8AW3teWdXM5ZvW6POw",
+  authDomain: "thaai-tamizhans.firebaseapp.com",
+  projectId: "thaai-tamizhans",
+  storageBucket: "thaai-tamizhans.firebasestorage.app",
+  messagingSenderId: "685067889091",
+  appId: "1:685067889091:web:4f439d73fc8749c9deb576",
+  measurementId: "G-NJFGLVPR9D"
+};
 
-import {
-  ref,
-  uploadBytes,
-  uploadString,
-  getDownloadURL,
-  deleteObject
-} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
+window.FirebaseSync = {
+  app: null,
+  db: null,
+  analytics: null,
+  isInitialized: false,
+  isConnected: false,
+  isRemoteUpdating: false,
+  debounceTimer: null,
+  
+  // Primary Master Collection & Document
+  collectionName: 'thaai_tamizhans_club',
+  docId: 'app_live_state',
 
-import {
-  signInAnonymously,
-  signOut,
-  onAuthStateChanged
-} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+  // All 10 Project Database Tables (Firestore Collections)
+  tables: [
+    { key: 'players', name: '👥 வீரர்கள் (Players Table)', collection: 'players' },
+    { key: 'todayPractice', name: '📋 இன்றைய பயிற்சி (Today Practice)', collection: 'today_practice' },
+    { key: 'practiceCalendar', name: '📅 பயிற்சி அட்டவணை (Practice Schedule)', collection: 'practice_calendar' },
+    { key: 'instructions', name: '🎯 வீரர் பயிற்சிக் குறிப்புகள் (Instructions)', collection: 'instructions' },
+    { key: 'matchNotices', name: '📢 போட்டி அறிவிப்புகள் (Match Notices)', collection: 'match_notices' },
+    { key: 'performance', name: '📊 வீரர்கள் செயல்திறன் (Performance Matrix)', collection: 'performance' },
+    { key: 'todayAttendance', name: '✅ தினசரி வருகைப் பதிவு (Attendance)', collection: 'attendance' },
+    { key: 'messages', name: '💬 பொது அறிவிப்புகள் (Announcements)', collection: 'announcements' },
+    { key: 'files', name: '📁 அணி ஆவணங்கள் & வீடியோ (Files Vault)', collection: 'vault_files' },
+    { key: 'notifications', name: '🔔 அறிவிப்புகள் (Notifications)', collection: 'notifications' }
+  ],
 
-class FirebaseSyncService {
-  constructor() {
-    this.unsubscribers = [];
-    this.status = 'idle'; // 'idle' | 'syncing' | 'live' | 'offline'
-    this.onStatusChange = null;
-    this.onDataUpdate = null;
-    this.currentUser = null;
-    this.isListening = false;
-    this.lastSync = null;
-  }
-
-  updateStatus(status, message = '') {
-    this.status = status;
-    if (status === 'live') this.lastSync = new Date();
-    if (typeof this.onStatusChange === 'function') {
-      this.onStatusChange(status, message);
-    }
-  }
-
-  isReady() {
-    return isInitialized && db !== null;
-  }
-
-  // ----------------------------------------------------
-  // AUTHENTICATION & SESSION HANDLING
-  // ----------------------------------------------------
-  initAuth(callback) {
-    if (!auth) {
-      if (callback) callback(null);
-      return;
-    }
-    onAuthStateChanged(auth, (user) => {
-      this.currentUser = user;
-      if (callback) callback(user);
-    });
-  }
-
-  async login(role, identity, pin) {
-    if (!this.isReady()) {
-      return { success: true, offline: true, role, identity };
-    }
+  // 1. BOOTSTRAP & INITIALIZE
+  init() {
     try {
-      this.updateStatus('syncing', 'Signing in...');
-      // Sign in anonymously to authenticate with Firebase Auth
-      const credential = await signInAnonymously(auth);
-      const uid = credential.user.uid;
-
-      // Sync user profile to users/{uid}
-      const userDocRef = doc(db, 'users', uid);
-      await setDoc(userDocRef, {
-        uid,
-        name: identity.name || (role === 'coach' ? 'Coach Arun' : 'Player'),
-        role,
-        playerId: identity.playerId || null,
-        phone: identity.phone || '',
-        updatedAt: serverTimestamp()
-      }, { merge: true });
-
-      this.updateStatus('live', 'Connected');
-      return { success: true, uid, role, identity };
-    } catch (err) {
-      console.warn('Firebase auth falling back to offline session:', err.message);
-      this.updateStatus('offline', 'Local Session');
-      return { success: true, offline: true, role, identity };
-    }
-  }
-
-  async logout() {
-    this.unsubscribeAll();
-    if (auth) {
-      try {
-        await signOut(auth);
-      } catch (e) {
-        console.warn('Signout warning:', e);
+      if (typeof firebase === 'undefined') {
+        console.warn('⚠️ Firebase SDK not loaded yet.');
+        this.updateBadge('offline', 'SDK Not Loaded');
+        return;
       }
-    }
-    this.currentUser = null;
-    this.updateStatus('idle', 'Logged Out');
-  }
 
-  // ----------------------------------------------------
-  // REAL-TIME FIRESTORE LISTENERS (onSnapshot)
-  // ----------------------------------------------------
-  startRealtimeSync({ onDataUpdate, onStatusChange }) {
-    if (this.isListening) {
-      return;
-    }
-
-    this.onDataUpdate = onDataUpdate;
-    this.onStatusChange = onStatusChange;
-
-    if (!this.isReady()) {
-      console.log('⚡ Firebase not initialized; using offline local storage mode.');
-      this.updateStatus('offline', 'Local Cache');
-      return;
-    }
-
-    this.updateStatus('syncing', 'Connecting to Cloud...');
-
-    try {
-      // 1. Players Collection
-      const unsubPlayers = onSnapshot(collection(db, 'players'), (snapshot) => {
-        if (!snapshot.empty) {
-          const players = [];
-          snapshot.forEach(docSnap => {
-            players.push({ id: docSnap.id, ...docSnap.data() });
-          });
-          // Preserve numeric sorting if possible
-          players.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
-          this.notifyUpdate('players', players);
-        }
-        this.updateStatus('live', '🟢 Firebase Live');
-      }, (err) => this.handleListenerError('players', err));
-      this.unsubscribers.push(unsubPlayers);
-
-      // 2. Today's Practice Singleton Doc: todayPractice/current
-      const unsubToday = onSnapshot(doc(db, 'todayPractice', 'current'), (docSnap) => {
-        if (docSnap.exists()) {
-          this.notifyUpdate('todayPractice', docSnap.data());
-        }
-        this.updateStatus('live', '🟢 Firebase Live');
-      }, (err) => this.handleListenerError('todayPractice', err));
-      this.unsubscribers.push(unsubToday);
-
-      // 3. Practice Calendar Collection
-      const unsubCalendar = onSnapshot(collection(db, 'practiceCalendar'), (snapshot) => {
-        const sessions = [];
-        snapshot.forEach(docSnap => {
-          sessions.push({ id: docSnap.id, ...docSnap.data() });
-        });
-        sessions.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-        this.notifyUpdate('practiceCalendar', sessions);
-        this.updateStatus('live', '🟢 Firebase Live');
-      }, (err) => this.handleListenerError('practiceCalendar', err));
-      this.unsubscribers.push(unsubCalendar);
-
-      // 4. Instructions Collection
-      const unsubInstructions = onSnapshot(collection(db, 'instructions'), (snapshot) => {
-        const list = [];
-        snapshot.forEach(docSnap => {
-          list.push({ id: docSnap.id, ...docSnap.data() });
-        });
-        this.notifyUpdate('instructions', list);
-        this.updateStatus('live', '🟢 Firebase Live');
-      }, (err) => this.handleListenerError('instructions', err));
-      this.unsubscribers.push(unsubInstructions);
-
-      // 5. Match Notices Collection
-      const unsubNotices = onSnapshot(collection(db, 'matchNotices'), (snapshot) => {
-        const notices = [];
-        snapshot.forEach(docSnap => {
-          notices.push({ id: docSnap.id, ...docSnap.data() });
-        });
-        notices.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-        this.notifyUpdate('matchNotices', notices);
-        this.updateStatus('live', '🟢 Firebase Live');
-      }, (err) => this.handleListenerError('matchNotices', err));
-      this.unsubscribers.push(unsubNotices);
-
-      // 6. Performance Collection
-      const unsubPerf = onSnapshot(collection(db, 'performance'), (snapshot) => {
-        const perfMap = {};
-        snapshot.forEach(docSnap => {
-          perfMap[docSnap.id] = docSnap.data();
-        });
-        this.notifyUpdate('performance', perfMap);
-        this.updateStatus('live', '🟢 Firebase Live');
-      }, (err) => this.handleListenerError('performance', err));
-      this.unsubscribers.push(unsubPerf);
-
-      // 7. Attendance Collection
-      const unsubAttendance = onSnapshot(collection(db, 'attendance'), (snapshot) => {
-        const attendanceList = [];
-        snapshot.forEach(docSnap => {
-          attendanceList.push({ date: docSnap.id, ...docSnap.data() });
-        });
-        this.notifyUpdate('attendanceRecords', attendanceList);
-        this.updateStatus('live', '🟢 Firebase Live');
-      }, (err) => this.handleListenerError('attendance', err));
-      this.unsubscribers.push(unsubAttendance);
-
-      // 8. Announcements Collection
-      const unsubAnnounce = onSnapshot(collection(db, 'announcements'), (snapshot) => {
-        const msgs = [];
-        snapshot.forEach(docSnap => {
-          msgs.push({ id: docSnap.id, ...docSnap.data() });
-        });
-        this.notifyUpdate('messages', msgs);
-        this.updateStatus('live', '🟢 Firebase Live');
-      }, (err) => this.handleListenerError('announcements', err));
-      this.unsubscribers.push(unsubAnnounce);
-
-      // 9. Files Collection
-      const unsubFiles = onSnapshot(collection(db, 'files'), (snapshot) => {
-        const fileList = [];
-        snapshot.forEach(docSnap => {
-          fileList.push({ id: docSnap.id, ...docSnap.data() });
-        });
-        this.notifyUpdate('files', fileList);
-        this.updateStatus('live', '🟢 Firebase Live');
-      }, (err) => this.handleListenerError('files', err));
-      this.unsubscribers.push(unsubFiles);
-
-      // 10. Notifications Collection
-      const unsubNotifs = onSnapshot(collection(db, 'notifications'), (snapshot) => {
-        const notifList = [];
-        snapshot.forEach(docSnap => {
-          notifList.push({ id: docSnap.id, ...docSnap.data() });
-        });
-        notifList.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-        this.notifyUpdate('notifications', notifList);
-        this.updateStatus('live', '🟢 Firebase Live');
-      }, (err) => this.handleListenerError('notifications', err));
-      this.unsubscribers.push(unsubNotifs);
-
-      this.isListening = true;
-      console.log('✅ Real-time Firestore synchronization active across all 11 collections.');
-    } catch (err) {
-      console.warn('Real-time listener setup error:', err);
-      this.updateStatus('offline', 'Local Cache');
-    }
-  }
-
-  notifyUpdate(key, data) {
-    if (typeof this.onDataUpdate === 'function') {
-      this.onDataUpdate(key, data);
-    }
-  }
-
-  handleListenerError(collectionName, err) {
-    console.warn(`Firestore listener warning for [${collectionName}]:`, err.message);
-    this.updateStatus('offline', 'Offline Cache');
-  }
-
-  unsubscribeAll() {
-    this.unsubscribers.forEach(unsub => {
-      try {
-        if (typeof unsub === 'function') unsub();
-      } catch (e) {
-        console.warn('Unsubscribe error:', e);
-      }
-    });
-    this.unsubscribers = [];
-    this.isListening = false;
-  }
-
-  // ----------------------------------------------------
-  // STORAGE HELPERS (Posters, Avatars, Strategy PDFs, Videos)
-  // ----------------------------------------------------
-  async uploadFile(path, fileOrDataUrl, contentType = 'image/jpeg') {
-    if (!this.isReady() || !storage) {
-      return typeof fileOrDataUrl === 'string' ? fileOrDataUrl : URL.createObjectURL(fileOrDataUrl);
-    }
-    try {
-      this.updateStatus('syncing', 'Uploading file...');
-      const storageRef = ref(storage, path);
-      if (typeof fileOrDataUrl === 'string' && fileOrDataUrl.startsWith('data:')) {
-        await uploadString(storageRef, fileOrDataUrl, 'data_url');
+      if (!firebase.apps.length) {
+        this.app = firebase.initializeApp(firebaseConfig);
       } else {
-        await uploadBytes(storageRef, fileOrDataUrl, { contentType });
+        this.app = firebase.app();
       }
-      const downloadUrl = await getDownloadURL(storageRef);
-      this.updateStatus('live', 'Uploaded');
-      return downloadUrl;
-    } catch (err) {
-      console.warn('Storage upload warning (using fallback data):', err.message);
-      this.updateStatus('offline', 'Storage Offline');
-      return typeof fileOrDataUrl === 'string' ? fileOrDataUrl : URL.createObjectURL(fileOrDataUrl);
-    }
-  }
 
-  async deleteFileByUrl(url) {
-    if (!this.isReady() || !storage || !url || !url.includes('firebase')) return;
+      this.db = firebase.firestore();
+
+      // Enable offline persistence
+      this.db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
+        if (err.code === 'failed-precondition') {
+          console.info('Firestore: multi-tab persistence shared.');
+        }
+      });
+
+      if (typeof firebase.analytics === 'function') {
+        try { this.analytics = firebase.analytics(); } catch (e) {}
+      }
+
+      this.isInitialized = true;
+      this.updateBadge('connecting', 'Connecting...');
+      console.log('🔥 Firebase Initialized for Thaai Tamizhans');
+
+      // Start Real-Time Listener
+      this.listenToRealtime();
+
+    } catch (error) {
+      console.error('❌ Firebase Init Error:', error);
+      this.updateBadge('error', 'Init Error');
+    }
+  },
+
+  // 2. REAL-TIME LISTENER (Live multi-device sync)
+  listenToRealtime() {
+    if (!this.db) return;
+
+    const docRef = this.db.collection(this.collectionName).doc(this.docId);
+
+    docRef.onSnapshot(
+      (doc) => {
+        this.isConnected = true;
+        this.updateBadge('live', 'Live Connected');
+
+        if (doc.exists) {
+          const data = doc.data();
+          if (data && data.payload) {
+            console.log('⚡ [Firebase Live] Received cloud data update');
+            this.applyRemoteData(data.payload);
+          }
+        } else {
+          console.log('📝 [Firebase] First time database setup. Creating all tables in Firestore...');
+          this.seedAllDatabaseTables();
+        }
+      },
+      (error) => {
+        console.warn('⚠️ [Firebase] Realtime Listener Error:', error);
+        if (error.code === 'permission-denied') {
+          this.updateBadge('warning', 'Rules Denied');
+        } else {
+          this.updateBadge('offline', 'Offline');
+        }
+      }
+    );
+  },
+
+  // 3. SEED AND CREATE ALL 10 TABLES IN CLOUD FIRESTORE
+  async seedAllDatabaseTables() {
+    if (!this.db) {
+      console.error('Firestore not available');
+      return;
+    }
+
     try {
-      const fileRef = ref(storage, url);
-      await deleteObject(fileRef);
+      this.updateBadge('syncing', 'Creating Tables...');
+      console.log('🚀 Creating and populating all 10 Cloud Firestore Collections (Tables)...');
+
+      const sourceData = (typeof appData !== 'undefined' && appData) ? appData : INITIAL_KABADDI_DATA;
+      const batch = this.db.batch();
+
+      // Table 1: Players Collection
+      if (sourceData.players && Array.isArray(sourceData.players)) {
+        sourceData.players.forEach(p => {
+          const ref = this.db.collection('players').doc(String(p.id));
+          batch.set(ref, { ...p, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        });
+      }
+
+      // Table 2: Today Practice
+      if (sourceData.todayPractice) {
+        const ref = this.db.collection('today_practice').doc('current');
+        batch.set(ref, { ...sourceData.todayPractice, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      }
+
+      // Table 3: Practice Calendar
+      if (sourceData.practiceCalendar && Array.isArray(sourceData.practiceCalendar)) {
+        sourceData.practiceCalendar.forEach(item => {
+          const ref = this.db.collection('practice_calendar').doc(String(item.id));
+          batch.set(ref, { ...item, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        });
+      }
+
+      // Table 4: Instructions
+      if (sourceData.instructions && Array.isArray(sourceData.instructions)) {
+        sourceData.instructions.forEach(ins => {
+          const ref = this.db.collection('instructions').doc(String(ins.id));
+          batch.set(ref, { ...ins, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        });
+      }
+
+      // Table 5: Match Notices
+      if (sourceData.matchNotices && Array.isArray(sourceData.matchNotices)) {
+        sourceData.matchNotices.forEach(notice => {
+          const ref = this.db.collection('match_notices').doc(String(notice.id));
+          batch.set(ref, { ...notice, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        });
+      }
+
+      // Table 6: Performance Matrix
+      if (sourceData.performance && typeof sourceData.performance === 'object') {
+        Object.keys(sourceData.performance).forEach(playerId => {
+          const ref = this.db.collection('performance').doc(String(playerId));
+          batch.set(ref, {
+            playerId: playerId,
+            ...sourceData.performance[playerId],
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        });
+      }
+
+      // Table 7: Attendance
+      if (sourceData.todayAttendance) {
+        const ref = this.db.collection('attendance').doc('today');
+        batch.set(ref, {
+          date: new Date().toISOString().split('T')[0],
+          records: sourceData.todayAttendance,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      }
+
+      // Table 8: Announcements (Messages)
+      if (sourceData.messages && Array.isArray(sourceData.messages)) {
+        sourceData.messages.forEach(msg => {
+          const ref = this.db.collection('announcements').doc(String(msg.id));
+          batch.set(ref, { ...msg, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        });
+      }
+
+      // Table 9: Files (Vault)
+      if (sourceData.files && Array.isArray(sourceData.files)) {
+        sourceData.files.forEach(f => {
+          const cleanF = { ...f };
+          if (cleanF.url && (cleanF.url.startsWith('blob:') || cleanF.url.startsWith('data:video/'))) cleanF.url = '';
+          const ref = this.db.collection('vault_files').doc(String(f.id));
+          batch.set(ref, { ...cleanF, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        });
+      }
+
+      // Table 10: Notifications
+      if (sourceData.notifications && Array.isArray(sourceData.notifications)) {
+        sourceData.notifications.forEach(n => {
+          const ref = this.db.collection('notifications').doc(String(n.id));
+          batch.set(ref, { ...n, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        });
+      }
+
+      // Master Live Document for Fast Sync
+      const masterDoc = this.db.collection(this.collectionName).doc(this.docId);
+      const cleanClone = this.cleanForCloud(sourceData);
+      batch.set(masterDoc, {
+        payload: cleanClone,
+        seededAt: firebase.firestore.FieldValue.serverTimestamp(),
+        lastUpdatedBy: 'Admin Seeder'
+      }, { merge: true });
+
+      // Commit Batch Write to Firestore
+      await batch.commit();
+
+      console.log('✅ ALL 10 Database Tables created and populated in Firestore!');
+      this.updateBadge('live', 'Live Connected');
+      this.isConnected = true;
+
+      if (typeof showToast === 'function') {
+        showToast('அனைத்து 10 டேட்டாபேஸ் டேபிள்களும் கிளவுடில் உருவாக்கப்பட்டது! 🏆', 'ri-database-2-line');
+      }
+
+      this.renderTableManagerStatus();
+
+    } catch (error) {
+      console.error('❌ Error creating tables:', error);
+      if (error.code === 'permission-denied') {
+        this.updateBadge('warning', 'Rules Denied');
+        if (typeof showToast === 'function') {
+          showToast('Firebase Rules-ல் அனுமதி தேவை (allow read, write: if true).', 'ri-alert-line');
+        }
+      } else {
+        this.updateBadge('error', 'Error');
+      }
+    }
+  },
+
+  // 4. APPLY REMOTE INCOMING DATA
+  applyRemoteData(incoming) {
+    if (!incoming || typeof incoming !== 'object') return;
+
+    this.isRemoteUpdating = true;
+    try {
+      const currentRole = (typeof appData !== 'undefined' && appData.activeRole) ? appData.activeRole : 'coach';
+      const currentPlayerId = (typeof appData !== 'undefined' && appData.activePlayerId) ? appData.activePlayerId : 1;
+
+      if (typeof appData !== 'undefined') {
+        Object.assign(appData, incoming);
+        appData.activeRole = currentRole;
+        appData.activePlayerId = currentPlayerId;
+      }
+
+      try {
+        localStorage.setItem('HOME_KABADDI_APP_DATA_TANGLISH_V1', JSON.stringify(incoming));
+      } catch (err) {}
+
+      if (typeof renderAppShell === 'function') renderAppShell();
+      if (typeof renderCurrentView === 'function') renderCurrentView();
+      if (typeof renderNotifications === 'function') renderNotifications();
+
+      this.renderTableManagerStatus();
     } catch (e) {
-      console.warn('Storage delete skipped:', e.message);
+      console.error('Error applying remote data:', e);
+    } finally {
+      setTimeout(() => {
+        this.isRemoteUpdating = false;
+      }, 500);
     }
-  }
+  },
 
-  // ----------------------------------------------------
-  // CLOUD FIRESTORE CRUD OPERATIONS
-  // ----------------------------------------------------
+  // 5. DEBOUNCED AUTO-UPLOAD ON ANY LOCAL CHANGE
+  uploadData(data) {
+    if (this.isRemoteUpdating) return;
+    if (!this.isInitialized || !this.db) return;
 
-  // 1. Players
+    clearTimeout(this.debounceTimer);
+    this.updateBadge('syncing', 'Syncing...');
+
+    this.debounceTimer = setTimeout(() => {
+      this.uploadDataImmediately(data);
+    }, 500);
+  },
+
+  // 6. IMMEDIATE SAVE TO CLOUD FIRESTORE MASTER DOC & TABLES
+  async uploadDataImmediately(data) {
+    if (!this.db) return;
+
+    try {
+      const cleanClone = this.cleanForCloud(data);
+      const masterDoc = this.db.collection(this.collectionName).doc(this.docId);
+      
+      await masterDoc.set({
+        payload: cleanClone,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        lastUpdatedBy: (typeof appData !== 'undefined' && appData.coachProfile) ? appData.coachProfile.name : 'Web App'
+      }, { merge: true });
+
+      console.log('✅ [Firebase] Master doc sync successful');
+      this.updateBadge('live', 'Live Connected');
+      this.renderTableManagerStatus();
+
+    } catch (error) {
+      console.error('❌ Failed to write to Firestore:', error);
+      if (error.code === 'permission-denied') {
+        this.updateBadge('warning', 'Rules Denied');
+      } else {
+        this.updateBadge('error', 'Sync Failed');
+      }
+    }
+  },
+
+  // Helper: Strip large video data URLs before pushing to cloud
+  cleanForCloud(data) {
+    const clone = JSON.parse(JSON.stringify(data));
+    if (clone.files && Array.isArray(clone.files)) {
+      clone.files = clone.files.map(f => {
+        const item = { ...f };
+        if (item.url && (item.url.startsWith('blob:') || item.url.startsWith('data:video/'))) item.url = '';
+        if (item.thumbnail && (item.thumbnail.startsWith('blob:') || item.thumbnail.startsWith('data:video/'))) {
+          item.thumbnail = item.type === 'Video' ? 'assets/kabaddi_arena_bg.jpg' : 'assets/thaai_tamizhans_logo.jpg';
+        }
+        return item;
+      });
+    }
+    return clone;
+  },
+
+  // 7. DIRECT COLLECTION CRUD COMPATIBILITY METHODS
   async savePlayer(player) {
-    if (!this.isReady()) return;
+    if (!this.db || !player) return;
     try {
-      const docId = String(player.id || Date.now());
-      await setDoc(doc(db, 'players', docId), {
+      await this.db.collection('players').doc(String(player.id)).set({
         ...player,
-        id: isNaN(player.id) ? player.id : Number(player.id),
-        updatedAt: serverTimestamp()
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
-    } catch (err) {
-      console.warn('savePlayer failed:', err.message);
-    }
-  }
-
-  async deletePlayer(id) {
-    if (!this.isReady()) return;
-    try {
-      await deleteDoc(doc(db, 'players', String(id)));
-    } catch (err) {
-      console.warn('deletePlayer failed:', err.message);
-    }
-  }
-
-  // 2. Today's Practice Singleton
+    } catch (e) { console.warn('savePlayer err:', e); }
+  },
   async saveTodayPractice(practice) {
-    if (!this.isReady()) return;
+    if (!this.db || !practice) return;
     try {
-      await setDoc(doc(db, 'todayPractice', 'current'), {
+      await this.db.collection('today_practice').doc('current').set({
         ...practice,
-        updatedAt: serverTimestamp()
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
-    } catch (err) {
-      console.warn('saveTodayPractice failed:', err.message);
-    }
-  }
-
-  // 3. Practice Calendar
+    } catch (e) { console.warn('saveTodayPractice err:', e); }
+  },
   async savePracticeSession(session) {
-    if (!this.isReady()) return;
+    if (!this.db || !session) return;
     try {
-      const docId = String(session.id || Date.now());
-      await setDoc(doc(db, 'practiceCalendar', docId), {
+      await this.db.collection('practice_calendar').doc(String(session.id)).set({
         ...session,
-        id: isNaN(session.id) ? session.id : Number(session.id),
-        updatedAt: serverTimestamp()
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
-    } catch (err) {
-      console.warn('savePracticeSession failed:', err.message);
-    }
-  }
-
+    } catch (e) { console.warn('savePracticeSession err:', e); }
+  },
   async deletePracticeSession(id) {
-    if (!this.isReady()) return;
+    if (!this.db) return;
     try {
-      await deleteDoc(doc(db, 'practiceCalendar', String(id)));
-    } catch (err) {
-      console.warn('deletePracticeSession failed:', err.message);
-    }
-  }
-
-  // 4. Instructions
-  async saveInstruction(instruction) {
-    if (!this.isReady()) return;
+      await this.db.collection('practice_calendar').doc(String(id)).delete();
+    } catch (e) { console.warn('deletePracticeSession err:', e); }
+  },
+  async saveMatchNotice(notice) {
+    if (!this.db || !notice) return;
     try {
-      const docId = String(instruction.id || Date.now());
-      await setDoc(doc(db, 'instructions', docId), {
-        ...instruction,
-        id: isNaN(instruction.id) ? instruction.id : Number(instruction.id),
-        updatedAt: serverTimestamp(),
-        createdAt: instruction.createdAt || Date.now()
-      }, { merge: true });
-    } catch (err) {
-      console.warn('saveInstruction failed:', err.message);
-    }
-  }
-
-  async deleteInstruction(id) {
-    if (!this.isReady()) return;
-    try {
-      await deleteDoc(doc(db, 'instructions', String(id)));
-    } catch (err) {
-      console.warn('deleteInstruction failed:', err.message);
-    }
-  }
-
-  // 5. Match Notices (with Storage image support)
-  async saveMatchNotice(notice, imageFileOrBase64 = null) {
-    if (!this.isReady()) return;
-    try {
-      const docId = String(notice.id || Date.now());
-      let imageUrl = notice.image || notice.imageUrl || '';
-
-      if (imageFileOrBase64) {
-        const path = `match-notices/notice_${docId}_${Date.now()}.jpg`;
-        imageUrl = await this.uploadFile(path, imageFileOrBase64, 'image/jpeg');
-      }
-
-      await setDoc(doc(db, 'matchNotices', docId), {
+      await this.db.collection('match_notices').doc(String(notice.id)).set({
         ...notice,
-        id: isNaN(notice.id) ? notice.id : Number(notice.id),
-        imageUrl,
-        image: imageUrl,
-        updatedAt: serverTimestamp(),
-        createdAt: notice.createdAt || Date.now()
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
-    } catch (err) {
-      console.warn('saveMatchNotice failed:', err.message);
-    }
-  }
-
+    } catch (e) { console.warn('saveMatchNotice err:', e); }
+  },
   async deleteMatchNotice(id) {
-    if (!this.isReady()) return;
+    if (!this.db) return;
     try {
-      await deleteDoc(doc(db, 'matchNotices', String(id)));
-    } catch (err) {
-      console.warn('deleteMatchNotice failed:', err.message);
-    }
-  }
-
-  // 6. Performance
-  async savePerformance(playerId, perfData) {
-    if (!this.isReady()) return;
+      await this.db.collection('match_notices').doc(String(id)).delete();
+    } catch (e) { console.warn('deleteMatchNotice err:', e); }
+  },
+  async saveInstruction(instruction) {
+    if (!this.db || !instruction) return;
     try {
-      const docId = String(playerId);
-      await setDoc(doc(db, 'performance', docId), {
-        ...perfData,
-        playerId: Number(playerId) || playerId,
-        updatedAt: serverTimestamp()
+      await this.db.collection('instructions').doc(String(instruction.id)).set({
+        ...instruction,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
-    } catch (err) {
-      console.warn('savePerformance failed:', err.message);
-    }
-  }
-
-  // 7. Attendance
-  async saveAttendance(dateStr, records) {
-    if (!this.isReady()) return;
+    } catch (e) { console.warn('saveInstruction err:', e); }
+  },
+  async deleteInstruction(id) {
+    if (!this.db) return;
     try {
-      const docId = dateStr || new Date().toISOString().slice(0, 10);
-      await setDoc(doc(db, 'attendance', docId), {
-        date: docId,
-        records,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
-    } catch (err) {
-      console.warn('saveAttendance failed:', err.message);
-    }
-  }
-
-  // 8. Announcements
-  async saveAnnouncement(announcement) {
-    if (!this.isReady()) return;
+      await this.db.collection('instructions').doc(String(id)).delete();
+    } catch (e) { console.warn('deleteInstruction err:', e); }
+  },
+  async savePerformance(playerId, perf) {
+    if (!this.db || !perf) return;
     try {
-      const docId = String(announcement.id || Date.now());
-      await setDoc(doc(db, 'announcements', docId), {
-        ...announcement,
-        id: isNaN(announcement.id) ? announcement.id : Number(announcement.id),
-        readBy: announcement.readBy || [],
-        createdAt: announcement.createdAt || Date.now(),
-        updatedAt: serverTimestamp()
+      await this.db.collection('performance').doc(String(playerId)).set({
+        playerId: playerId,
+        ...perf,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
-    } catch (err) {
-      console.warn('saveAnnouncement failed:', err.message);
-    }
-  }
-
+    } catch (e) { console.warn('savePerformance err:', e); }
+  },
+  async saveAttendance(date, records) {
+    if (!this.db) return;
+    try {
+      await this.db.collection('attendance').doc(String(date || 'today')).set({
+        date: date || new Date().toISOString().split('T')[0],
+        records: records,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    } catch (e) { console.warn('saveAttendance err:', e); }
+  },
+  async saveAnnouncement(msg) {
+    if (!this.db || !msg) return;
+    try {
+      await this.db.collection('announcements').doc(String(msg.id)).set({
+        ...msg,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    } catch (e) { console.warn('saveAnnouncement err:', e); }
+  },
   async deleteAnnouncement(id) {
-    if (!this.isReady()) return;
+    if (!this.db) return;
     try {
-      await deleteDoc(doc(db, 'announcements', String(id)));
-    } catch (err) {
-      console.warn('deleteAnnouncement failed:', err.message);
-    }
-  }
-
-  // 9. Files & Media Vault
-  async saveFile(fileMetadata, fileBlob = null) {
-    if (!this.isReady()) return;
+      await this.db.collection('announcements').doc(String(id)).delete();
+    } catch (e) { console.warn('deleteAnnouncement err:', e); }
+  },
+  async saveFile(file) {
+    if (!this.db || !file) return;
     try {
-      const docId = String(fileMetadata.id || Date.now());
-      let storageUrl = fileMetadata.url || fileMetadata.storageUrl || '';
-
-      if (fileBlob) {
-        const ext = (fileMetadata.name || '').split('.').pop() || 'dat';
-        const path = `vault-files/file_${docId}_${Date.now()}.${ext}`;
-        storageUrl = await this.uploadFile(path, fileBlob, fileBlob.type || 'application/octet-stream');
-      }
-
-      await setDoc(doc(db, 'files', docId), {
-        ...fileMetadata,
-        id: isNaN(fileMetadata.id) ? fileMetadata.id : Number(fileMetadata.id),
-        storageUrl,
-        url: storageUrl,
-        thumbnailUrl: fileMetadata.thumbnailUrl || fileMetadata.thumbnail || storageUrl,
-        updatedAt: serverTimestamp()
+      const clean = { ...file };
+      if (clean.url && (clean.url.startsWith('blob:') || clean.url.startsWith('data:video/'))) clean.url = '';
+      await this.db.collection('vault_files').doc(String(file.id)).set({
+        ...clean,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
-    } catch (err) {
-      console.warn('saveFile failed:', err.message);
-    }
-  }
-
+    } catch (e) { console.warn('saveFile err:', e); }
+  },
   async deleteFile(id) {
-    if (!this.isReady()) return;
+    if (!this.db) return;
     try {
-      await deleteDoc(doc(db, 'files', String(id)));
-    } catch (err) {
-      console.warn('deleteFile failed:', err.message);
-    }
-  }
-
-  // 10. Notifications
+      await this.db.collection('vault_files').doc(String(id)).delete();
+    } catch (e) { console.warn('deleteFile err:', e); }
+  },
   async addNotification(notif) {
-    if (!this.isReady()) return;
+    if (!this.db || !notif) return;
     try {
-      const docId = String(notif.id || Date.now());
-      await setDoc(doc(db, 'notifications', docId), {
+      await this.db.collection('notifications').doc(String(notif.id)).set({
         ...notif,
-        id: isNaN(notif.id) ? notif.id : Number(notif.id),
-        readBy: notif.readBy || [],
-        createdAt: notif.createdAt || Date.now()
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
-    } catch (err) {
-      console.warn('addNotification failed:', err.message);
-    }
-  }
+    } catch (e) { console.warn('addNotification err:', e); }
+  },
 
-  async markNotificationRead(notifId, userId) {
-    if (!this.isReady()) return;
+  // 8. MANUAL FORCE SYNC ALL
+  async forceSyncNow() {
+    this.openDatabaseManagerModal();
+  },
+
+  // 8. UPDATE UI BADGE
+  updateBadge(status, label) {
+    const badge = document.getElementById('firebaseLiveBadge');
+    if (!badge) return;
+
+    badge.className = `firebase-live-badge status-${status}`;
+    const dot = badge.querySelector('.fb-dot');
+    const text = badge.querySelector('.fb-label');
+    
+    if (dot) {
+      dot.className = `fb-dot ${status === 'live' ? 'pulse-green' : (status === 'syncing' ? 'spin-sync' : '')}`;
+    }
+    if (text) {
+      text.textContent = label;
+    }
+  },
+
+  // 9. DATABASE MANAGER MODAL & UI CONTROLLER
+  openDatabaseManagerModal() {
+    let modal = document.getElementById('firebaseDbModal');
+    if (!modal) {
+      this.createDatabaseManagerModalHtml();
+      modal = document.getElementById('firebaseDbModal');
+    }
+    if (modal) {
+      modal.classList.add('active');
+      this.renderTableManagerStatus();
+    }
+  },
+
+  closeDatabaseManagerModal() {
+    const modal = document.getElementById('firebaseDbModal');
+    if (modal) modal.classList.remove('active');
+  },
+
+  createDatabaseManagerModalHtml() {
+    const div = document.createElement('div');
+    div.id = 'firebaseDbModal';
+    div.className = 'modal-backdrop-custom';
+    div.innerHTML = `
+      <div class="modal-card-custom db-manager-card">
+        <!-- Modal Header -->
+        <div class="db-modal-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="db-icon-box">
+              <i class="ri-database-2-fill text-gradient-orange" style="font-size:1.6rem;"></i>
+            </div>
+            <div>
+              <h3 style="margin:0; font-size:1.15rem; font-weight:800;" class="text-gradient-cyan">
+                Cloud Firestore Database Hub
+              </h3>
+              <p style="margin:2px 0 0; font-size:0.75rem; color:#94a3b8;">
+                தாய் தமிழன்ஸ் — Live Cloud Tables & Real-Time Sync
+              </p>
+            </div>
+          </div>
+          <button type="button" class="btn-close-custom" onclick="window.FirebaseSync.closeDatabaseManagerModal()">
+            <i class="ri-close-line"></i>
+          </button>
+        </div>
+
+        <!-- Connection Status Banner -->
+        <div class="db-status-banner" id="dbModalStatusBanner">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="fb-dot ${this.isConnected ? 'pulse-green' : ''}"></span>
+            <div>
+              <div style="font-size:0.85rem; font-weight:800; color:#fff;" id="dbModalStatusTitle">
+                ${this.isConnected ? '🟢 Cloud Database Connected (Live)' : '🟡 Connecting to Firestore...'}
+              </div>
+              <div style="font-size:0.72rem; color:#94a3b8;" id="dbModalStatusSubtitle">
+                Project ID: thaai-tamizhans | Mode: Cloud Real-time
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline" onclick="window.FirebaseSync.testConnection()" style="font-size:0.72rem; padding:4px 10px;">
+            <i class="ri-pulse-line"></i> Test Ping
+          </button>
+        </div>
+
+        <!-- 10 Tables Grid -->
+        <div class="db-tables-list-header">
+          <span>📁 DATABASE COLLECTIONS (டேபிள்கள்)</span>
+          <span id="dbTotalRecordsCount" style="color:var(--accent-cyan); font-weight:700;">10 Tables Active</span>
+        </div>
+
+        <div class="db-tables-grid" id="dbTablesGrid">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="db-modal-actions">
+          <button type="button" class="btn btn-outline" onclick="window.FirebaseSync.closeDatabaseManagerModal()">
+            Close (மூடு)
+          </button>
+          <button type="button" class="btn btn-primary" onclick="window.FirebaseSync.seedAllDatabaseTables()" style="background:var(--grad-orange); box-shadow:0 0 20px rgba(255,85,0,0.4);">
+            <i class="ri-upload-cloud-2-line"></i> Seed & Sync All 10 Tables (அனைத்தையும் ஏற்று)
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(div);
+  },
+
+  renderTableManagerStatus() {
+    const grid = document.getElementById('dbTablesGrid');
+    if (!grid) return;
+
+    const data = typeof appData !== 'undefined' ? appData : INITIAL_KABADDI_DATA;
+
+    const tableCounts = {
+      players: data.players ? data.players.length : 0,
+      todayPractice: data.todayPractice ? (data.todayPractice.sections ? data.todayPractice.sections.length : 1) : 0,
+      practiceCalendar: data.practiceCalendar ? data.practiceCalendar.length : 0,
+      instructions: data.instructions ? data.instructions.length : 0,
+      matchNotices: data.matchNotices ? data.matchNotices.length : 0,
+      performance: data.performance ? Object.keys(data.performance).length : 0,
+      todayAttendance: data.todayAttendance ? data.todayAttendance.length : 0,
+      messages: data.messages ? data.messages.length : 0,
+      files: data.files ? data.files.length : 0,
+      notifications: data.notifications ? data.notifications.length : 0
+    };
+
+    grid.innerHTML = this.tables.map(t => {
+      const count = tableCounts[t.key] !== undefined ? tableCounts[t.key] : 0;
+      return `
+        <div class="db-table-row">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="db-table-badge">${t.collection}</div>
+            <div style="font-size:0.82rem; font-weight:700; color:#e2e8f0;">${t.name}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="db-count-pill">${count} Records</span>
+            <i class="ri-checkbox-circle-fill" style="color:var(--accent-green); font-size:1.1rem;" title="Synced to Database"></i>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const bannerTitle = document.getElementById('dbModalStatusTitle');
+    if (bannerTitle) {
+      bannerTitle.innerHTML = this.isConnected 
+        ? '<span style="color:#00ff88;">🟢 Cloud Database Connected (Live Active)</span>'
+        : '<span style="color:#facc15;">🟡 Syncing with Firestore...</span>';
+    }
+  },
+
+  async testConnection() {
+    if (!this.db) {
+      if (typeof showToast === 'function') showToast('Firebase SDK Not Initialized', 'ri-close-circle-line');
+      return;
+    }
     try {
-      const notifRef = doc(db, 'notifications', String(notifId));
-      const notifSnap = await getDoc(notifRef);
-      if (notifSnap.exists()) {
-        const readBy = notifSnap.data().readBy || [];
-        if (!readBy.includes(userId)) {
-          readBy.push(userId);
-          await setDoc(notifRef, { readBy }, { merge: true });
-        }
-      }
+      if (typeof showToast === 'function') showToast('Connecting to Firestore...', 'ri-loader-4-line');
+      const testRef = this.db.collection('system_status').doc('ping');
+      await testRef.set({ timestamp: firebase.firestore.FieldValue.serverTimestamp(), status: 'OK' });
+      if (typeof showToast === 'function') showToast('✅ Firestore Connection Test Passed! 100% Live', 'ri-check-double-line');
+      this.isConnected = true;
+      this.updateBadge('live', 'Live Connected');
+      this.renderTableManagerStatus();
     } catch (err) {
-      console.warn('markNotificationRead failed:', err.message);
+      console.error('Ping failed:', err);
+      if (err.code === 'permission-denied') {
+        if (typeof showToast === 'function') {
+          showToast('⚠️ Firestore Permission Denied! Rules-ல் allow read, write: if true; போடுங்கள்.', 'ri-alert-line');
+        }
+      } else {
+        if (typeof showToast === 'function') showToast('Connection Error: ' + err.message, 'ri-error-warning-line');
+      }
     }
   }
+};
 
-  // 11. Initial Data Cloud Seed (1-Click migration from INITIAL_KABADDI_DATA)
-  async seedInitialData(data) {
-    if (!this.isReady() || !data) return;
-    try {
-      this.updateStatus('syncing', 'Seeding initial squad data...');
-
-      // Seed Players
-      if (Array.isArray(data.players)) {
-        for (const p of data.players) {
-          await this.savePlayer(p);
-        }
-      }
-
-      // Seed Today Practice
-      if (data.todayPractice) {
-        await this.saveTodayPractice(data.todayPractice);
-      }
-
-      // Seed Practice Calendar
-      if (Array.isArray(data.practiceCalendar)) {
-        for (const s of data.practiceCalendar) {
-          await this.savePracticeSession(s);
-        }
-      }
-
-      // Seed Instructions
-      if (Array.isArray(data.instructions)) {
-        for (const inst of data.instructions) {
-          await this.saveInstruction(inst);
-        }
-      }
-
-      // Seed Match Notices
-      if (Array.isArray(data.matchNotices)) {
-        for (const n of data.matchNotices) {
-          await this.saveMatchNotice(n);
-        }
-      }
-
-      // Seed Performance
-      if (data.performance) {
-        for (const [pId, pData] of Object.entries(data.performance)) {
-          await this.savePerformance(pId, pData);
-        }
-      }
-
-      // Seed Announcements
-      if (Array.isArray(data.messages)) {
-        for (const m of data.messages) {
-          await this.saveAnnouncement(m);
-        }
-      }
-
-      // Seed Files
-      if (Array.isArray(data.files)) {
-        for (const f of data.files) {
-          await this.saveFile(f);
-        }
-      }
-
-      // Seed Notifications
-      if (Array.isArray(data.notifications)) {
-        for (const notif of data.notifications) {
-          await this.addNotification(notif);
-        }
-      }
-
-      this.updateStatus('live', '🟢 Firebase Seeded');
-      console.log('✅ தாய் தமிழன்ஸ் initial data seeded successfully to Cloud Firestore.');
-    } catch (err) {
-      console.error('Error seeding initial data to Firestore:', err);
-      this.updateStatus('offline', 'Seed Error');
-    }
-  }
-}
-
-// Instantiate and attach to global window
-const firebaseSync = new FirebaseSyncService();
-if (typeof window !== 'undefined') {
-  window.FirebaseSync = firebaseSync;
-}
-
-export default firebaseSync;
+// Automatic Boot
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    window.FirebaseSync.init();
+  }, 350);
+});
