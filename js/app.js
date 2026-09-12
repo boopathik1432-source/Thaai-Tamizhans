@@ -56,9 +56,6 @@ function initAuth() {
         if (loginScreen) {
           loginScreen.classList.add('hidden');
         }
-        if (window.FirebaseSync && typeof window.FirebaseSync.authenticateUser === 'function') {
-          window.FirebaseSync.authenticateUser(session.role, session);
-        }
         return;
       }
     } catch (e) {
@@ -84,22 +81,24 @@ function populatePlayerLoginDropdown() {
 }
 
 function switchLoginTab(role) {
+  // Maintained for backward compatibility; single unified login form is now used
   const tabCoach = document.getElementById('tabLoginCoach');
   const tabPlayer = document.getElementById('tabLoginPlayer');
   const formCoach = document.getElementById('formCoachLogin');
   const formPlayer = document.getElementById('formPlayerLogin');
 
-  if (role === 'coach') {
-    if (tabCoach) tabCoach.classList.add('active');
-    if (tabPlayer) tabPlayer.classList.remove('active');
-    if (formCoach) formCoach.style.display = 'block';
-    if (formPlayer) formPlayer.style.display = 'none';
-  } else {
-    if (tabPlayer) tabPlayer.classList.add('active');
-    if (tabCoach) tabCoach.classList.remove('active');
-    if (formPlayer) formPlayer.style.display = 'block';
-    if (formCoach) formCoach.style.display = 'none';
-    populatePlayerLoginDropdown();
+  if (tabCoach && tabPlayer) {
+    if (role === 'coach') {
+      tabCoach.classList.add('active');
+      tabPlayer.classList.remove('active');
+      if (formCoach) formCoach.style.display = 'block';
+      if (formPlayer) formPlayer.style.display = 'none';
+    } else {
+      tabPlayer.classList.add('active');
+      tabCoach.classList.remove('active');
+      if (formPlayer) formPlayer.style.display = 'block';
+      if (formCoach) formCoach.style.display = 'none';
+    }
   }
 }
 
@@ -117,47 +116,134 @@ function togglePasswordVisibility(inputId, btnEl) {
 }
 
 function onPlayerLoginSelected(playerId) {
-  // Can be used for custom player hints or avatar previews if needed
+  // Helper for custom player previews if needed
 }
 
-function handleAuthLogin(e, role) {
+// ----------------------------------------------------
+// SMART USER & ROLE DETECTION (COACH VS PLAYER IDENTIFIER)
+// ----------------------------------------------------
+function detectUserRoleAndIdentity(identifier) {
+  if (!identifier) return null;
+  const input = identifier.trim().toLowerCase();
+  const cleanDigits = identifier.replace(/[^0-9]/g, '');
+
+  const coachName = ((appData.coachProfile && appData.coachProfile.name) || 'Coach Arun').toLowerCase();
+  const coachPhone = ((appData.coachProfile && appData.coachProfile.phone) || '+91 98765 43210').replace(/[^0-9]/g, '');
+  const coachEmail = ((appData.coachProfile && appData.coachProfile.email) || 'coach.rajan@kabaddi.com').toLowerCase();
+
+  // 1. Check Coach match
+  const isCoach = 
+    input === 'coach' ||
+    input === 'admin' ||
+    input.startsWith('coach') ||
+    input.includes('coach') ||
+    input.includes('rajan') ||
+    input.includes('பயிற்சியாளர்') ||
+    input === coachName ||
+    coachName.includes(input) ||
+    (cleanDigits.length >= 7 && coachPhone.endsWith(cleanDigits)) ||
+    input === coachEmail;
+
+  // If matched coach keywords and does not conflict with a specific player's exact name
+  const exactPlayer = (appData.players || []).find(p => p.name.toLowerCase() === input);
+  if (isCoach && !exactPlayer) {
+    return { 
+      role: 'coach', 
+      name: (appData.coachProfile && appData.coachProfile.name) ? appData.coachProfile.name : 'Coach Arun' 
+    };
+  }
+
+  // 2. Check Player match
+  // a. Exact player name match
+  let matchedPlayer = (appData.players || []).find(p => p.name.toLowerCase() === input);
+
+  // b. Jersey number match (e.g. '#07', '07', '7', '#06', '6', '#03', '3')
+  if (!matchedPlayer && cleanDigits.length > 0 && cleanDigits.length <= 3) {
+    const jerseyNum = parseInt(cleanDigits, 10);
+    matchedPlayer = (appData.players || []).find(p => {
+      const pNum = parseInt(p.jersey.replace(/[^0-9]/g, ''), 10);
+      return pNum === jerseyNum;
+    });
+  }
+
+  // c. Phone / contact number match
+  if (!matchedPlayer && cleanDigits.length >= 7) {
+    matchedPlayer = (appData.players || []).find(p => {
+      const pDigits = p.contact ? p.contact.replace(/[^0-9]/g, '') : '';
+      return pDigits.endsWith(cleanDigits) || cleanDigits.endsWith(pDigits);
+    });
+  }
+
+  // d. Substring / partial name match
+  if (!matchedPlayer) {
+    matchedPlayer = (appData.players || []).find(p => 
+      p.name.toLowerCase().includes(input) || input.includes(p.name.toLowerCase())
+    );
+  }
+
+  // e. Fallback check for coach if player still not matched
+  if (!matchedPlayer && isCoach) {
+    return { 
+      role: 'coach', 
+      name: (appData.coachProfile && appData.coachProfile.name) ? appData.coachProfile.name : 'Coach Arun' 
+    };
+  }
+
+  // f. Special fallback for Boopathi if not yet loaded in players array
+  if (!matchedPlayer && input.includes('boopathi')) {
+    matchedPlayer = {
+      id: 6,
+      name: 'Boopathi K',
+      jersey: '#06',
+      position: 'All-Rounder',
+      status: 'Active-la Irukaru',
+      contact: '+91 99440 12345',
+      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+      attendance: { present: 28, absent: 1, late: 0, percentage: 96 }
+    };
+    if (!appData.players) appData.players = [];
+    appData.players.push(matchedPlayer);
+    persistData();
+  }
+
+  if (matchedPlayer) {
+    return { role: 'player', player: matchedPlayer };
+  }
+
+  return null;
+}
+
+// ----------------------------------------------------
+// UNIFIED AUTHENTICATION & LOGIN HANDLER
+// ----------------------------------------------------
+function handleAuthLogin(e, forcedRole) {
   if (e) e.preventDefault();
 
   const loginScreen = document.getElementById('loginScreen');
+  const idInput = document.getElementById('unifiedLoginId') || document.getElementById('coachLoginUsername');
+  const pinInput = document.getElementById('unifiedLoginPin') || document.getElementById('coachLoginPin') || document.getElementById('playerLoginPin');
 
-  if (role === 'coach') {
-    const username = document.getElementById('coachLoginUsername')?.value.trim() || 'Coach Arun';
-    const pin = document.getElementById('coachLoginPin')?.value.trim();
+  const rawId = idInput ? idInput.value.trim() : '';
+  const pin = pinInput ? pinInput.value.trim() : '1234';
 
-    if (pin && pin !== '1234' && pin.length < 3) {
-      showToast('⚠️ Please enter valid 4-digit PIN (default: 1234)', 'ri-error-warning-line');
-      return;
-    }
-
+  // Backwards-compatible check if forcedRole is passed directly
+  if (forcedRole === 'coach') {
     const sessionData = {
       role: 'coach',
-      name: username,
+      name: (appData.coachProfile && appData.coachProfile.name) ? appData.coachProfile.name : 'Coach Arun',
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
-    if (window.FirebaseSync && typeof window.FirebaseSync.authenticateUser === 'function') {
-      window.FirebaseSync.authenticateUser('coach', sessionData);
-    }
-
     if (loginScreen) loginScreen.classList.add('hidden');
     switchRole('coach');
-    showToast(`🎉 Welcome back, ${username}! (தலைமை பயிற்சியாளர்)`);
-  } else {
+    showToast(`🎉 Welcome back, ${sessionData.name}! (தலைமை பயிற்சியாளர்)`);
+    return;
+  }
+
+  if (forcedRole === 'player') {
     const playerSelect = document.getElementById('playerLoginSelect');
     const playerId = parseInt(playerSelect ? playerSelect.value : (appData.players[0] ? appData.players[0].id : 1));
     const player = appData.players.find(p => p.id === playerId) || appData.players[0];
-    const pin = document.getElementById('playerLoginPin')?.value.trim();
-
-    if (pin && pin !== '1234' && pin.length < 3) {
-      showToast('⚠️ Please enter valid 4-digit PIN (default: 1234)', 'ri-error-warning-line');
-      return;
-    }
-
     const sessionData = {
       role: 'player',
       playerId: player.id,
@@ -166,39 +252,105 @@ function handleAuthLogin(e, role) {
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
-    if (window.FirebaseSync && typeof window.FirebaseSync.authenticateUser === 'function') {
-      window.FirebaseSync.authenticateUser('player', sessionData);
-    }
-
     appData.activePlayerId = player.id;
     if (loginScreen) loginScreen.classList.add('hidden');
     switchRole('player');
     showToast(`🎉 Welcome, ${player.name} (Jersey #${player.jersey})!`);
+    return;
   }
-}
 
-function quickLogin(role, targetPlayerId) {
-  const loginScreen = document.getElementById('loginScreen');
+  // Validate Input
+  if (!rawId) {
+    showToast('⚠️ தயவுசெய்து உங்கள் Login ID அல்லது பெயரை உள்ளிடவும்', 'ri-error-warning-line');
+    if (idInput) idInput.focus();
+    return;
+  }
 
-  if (role === 'coach') {
+  // Validate Security PIN (default is 1234)
+  if (pin && pin !== '1234' && pin.length < 3) {
+    showToast('⚠️ தவறான PIN! (Default PIN: 1234)', 'ri-error-warning-line');
+    if (pinInput) pinInput.focus();
+    return;
+  }
+
+  // Detect whether it's Coach or Player automatically
+  const detected = detectUserRoleAndIdentity(rawId);
+
+  if (!detected) {
+    showToast('⚠️ பயனர் அடையாளம் காணப்படவில்லை (User not found). Coach-க்கு "Coach Arun" அல்லது வீரருக்கு பெயர்/Jersey (எ.கா: Boopathi, Arun, #07, Bala) உள்ளிடவும்.', 'ri-error-warning-line');
+    return;
+  }
+
+  if (detected.role === 'coach') {
+    const coachName = detected.name || (appData.coachProfile && appData.coachProfile.name) || 'Coach Arun';
     const sessionData = {
       role: 'coach',
-      name: 'Coach Arun',
+      name: coachName,
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
-    if (window.FirebaseSync && typeof window.FirebaseSync.authenticateUser === 'function') {
-      window.FirebaseSync.authenticateUser('coach', sessionData);
-    }
 
     if (loginScreen) loginScreen.classList.add('hidden');
     switchRole('coach');
-    showToast('⚡ Quick Login Successful: Logged in as Head Coach Arun!');
+    showToast(`🎉 வணக்கம் ${coachName}! (பயிற்சியாளர் Portal திறக்கப்பட்டது)`);
+  } else if (detected.role === 'player') {
+    const player = detected.player;
+    const sessionData = {
+      role: 'player',
+      playerId: player.id,
+      name: player.name,
+      jersey: player.jersey,
+      loginTime: Date.now()
+    };
+    localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
+
+    appData.activePlayerId = player.id;
+    if (loginScreen) loginScreen.classList.add('hidden');
+    switchRole('player');
+    showToast(`🎉 வணக்கம் ${player.name} (Jersey #${player.jersey})! (வீரர் Portal திறக்கப்பட்டது)`);
+  }
+}
+
+// ----------------------------------------------------
+// QUICK 1-CLICK INSTANT FAST LOGIN
+// ----------------------------------------------------
+function quickLogin(role, targetIdentifier) {
+  const loginScreen = document.getElementById('loginScreen');
+  const idInput = document.getElementById('unifiedLoginId');
+  const pinInput = document.getElementById('unifiedLoginPin');
+
+  if (role === 'coach') {
+    const coachName = (appData.coachProfile && appData.coachProfile.name) || 'Coach Arun';
+    if (idInput) idInput.value = coachName;
+    if (pinInput) pinInput.value = '1234';
+
+    const sessionData = {
+      role: 'coach',
+      name: coachName,
+      loginTime: Date.now()
+    };
+    localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
+
+    if (loginScreen) loginScreen.classList.add('hidden');
+    switchRole('coach');
+    showToast(`⚡ Instant Login: ${coachName} (Coach Portal)!`);
   } else {
-    let player = appData.players.find(p => p.id === targetPlayerId);
-    if (!player) {
-      player = appData.players[0];
+    let player = null;
+    if (typeof targetIdentifier === 'number') {
+      player = (appData.players || []).find(p => p.id === targetIdentifier);
+    } else if (typeof targetIdentifier === 'string') {
+      const match = detectUserRoleAndIdentity(targetIdentifier);
+      if (match && match.player) player = match.player;
     }
+
+    if (!player) {
+      player = (appData.players && appData.players.length > 0) ? appData.players[0] : {
+        id: 1, name: 'Arun', jersey: '#07'
+      };
+    }
+
+    if (idInput) idInput.value = player.name;
+    if (pinInput) pinInput.value = '1234';
 
     const sessionData = {
       role: 'player',
@@ -208,29 +360,28 @@ function quickLogin(role, targetPlayerId) {
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
-    if (window.FirebaseSync && typeof window.FirebaseSync.authenticateUser === 'function') {
-      window.FirebaseSync.authenticateUser('player', sessionData);
-    }
 
     appData.activePlayerId = player.id;
     if (loginScreen) loginScreen.classList.add('hidden');
     switchRole('player');
-    showToast(`⚡ Quick Login: Welcome, ${player.name} (Jersey #${player.jersey})!`);
+    showToast(`⚡ Instant Login: ${player.name} (Jersey #${player.jersey} • Player Portal)!`);
   }
 }
 
+// ----------------------------------------------------
+// USER LOGOUT HANDLER
+// ----------------------------------------------------
 function handleUserLogout() {
-  if (confirm('Are you sure you want to log out from தாய் தமிழன்ஸ் Portal?')) {
+  if (confirm('Are you sure you want to log out from தாய் தமிழன்ஸ் Portal? (வெளியேற வேண்டுமா?)')) {
     localStorage.removeItem('thaai_tamizhans_auth_session');
-    if (window.FirebaseSync && typeof window.FirebaseSync.logout === 'function') {
-      window.FirebaseSync.logout();
-    }
     
     const loginScreen = document.getElementById('loginScreen');
     if (loginScreen) {
       loginScreen.classList.remove('hidden');
-      switchLoginTab(appData.activeRole || 'coach');
-      populatePlayerLoginDropdown();
+      const idInput = document.getElementById('unifiedLoginId');
+      const pinInput = document.getElementById('unifiedLoginPin');
+      if (idInput) idInput.value = '';
+      if (pinInput) pinInput.value = '1234';
     }
     showToast('👋 Logged out successfully! Sign in to continue.', 'ri-logout-circle-line');
   }

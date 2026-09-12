@@ -62,6 +62,16 @@ const INITIAL_KABADDI_DATA = {
       contact: '+91 95432 10987',
       photo: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80',
       attendance: { present: 27, absent: 2, late: 0, percentage: 93 }
+    },
+    {
+      id: 6,
+      name: 'Boopathi K',
+      jersey: '#06',
+      position: 'All-Rounder',
+      status: 'Active-la Irukaru',
+      contact: '+91 99440 12345',
+      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+      attendance: { present: 28, absent: 1, late: 0, percentage: 96 }
     }
   ],
 
@@ -297,6 +307,18 @@ function getAppData() {
       if (!parsed.notifications || parsed.notifications.length === 0 || !parsed.notifications[0].target) {
         parsed.notifications = INITIAL_KABADDI_DATA.notifications;
       }
+      if (parsed.players && !parsed.players.some(p => p.name.toLowerCase().includes('boopathi'))) {
+        parsed.players.push({
+          id: 6,
+          name: 'Boopathi K',
+          jersey: '#06',
+          position: 'All-Rounder',
+          status: 'Active-la Irukaru',
+          contact: '+91 99440 12345',
+          photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+          attendance: { present: 28, absent: 1, late: 0, percentage: 96 }
+        });
+      }
       return parsed;
     } catch (e) {
       console.error(e);
@@ -323,11 +345,6 @@ function saveAppData(data) {
       });
     }
     localStorage.setItem('HOME_KABADDI_APP_DATA_TANGLISH_V1', JSON.stringify(clone));
-    
-    // Auto-sync real-time changes to Firebase Cloud Firestore
-    if (window.FirebaseSync && typeof window.FirebaseSync.uploadData === 'function') {
-      window.FirebaseSync.uploadData(clone);
-    }
   } catch (e) {
     console.warn('LocalStorage quota limit reached, saving lean data:', e);
     try {
@@ -347,11 +364,6 @@ function saveAppData(data) {
         }));
       }
       localStorage.setItem('HOME_KABADDI_APP_DATA_TANGLISH_V1', JSON.stringify(lean));
-      
-      // Auto-sync real-time changes to Firebase Cloud Firestore
-      if (window.FirebaseSync && typeof window.FirebaseSync.uploadData === 'function') {
-        window.FirebaseSync.uploadData(lean);
-      }
     } catch (err) {
       console.error('Critical storage error:', err);
     }
