@@ -56,6 +56,9 @@ function initAuth() {
         if (loginScreen) {
           loginScreen.classList.add('hidden');
         }
+        if (window.FirebaseSync && typeof window.FirebaseSync.authenticateUser === 'function') {
+          window.FirebaseSync.authenticateUser(session.role, session);
+        }
         return;
       }
     } catch (e) {
@@ -137,6 +140,9 @@ function handleAuthLogin(e, role) {
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
+    if (window.FirebaseSync && typeof window.FirebaseSync.authenticateUser === 'function') {
+      window.FirebaseSync.authenticateUser('coach', sessionData);
+    }
 
     if (loginScreen) loginScreen.classList.add('hidden');
     switchRole('coach');
@@ -160,6 +166,9 @@ function handleAuthLogin(e, role) {
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
+    if (window.FirebaseSync && typeof window.FirebaseSync.authenticateUser === 'function') {
+      window.FirebaseSync.authenticateUser('player', sessionData);
+    }
 
     appData.activePlayerId = player.id;
     if (loginScreen) loginScreen.classList.add('hidden');
@@ -178,6 +187,9 @@ function quickLogin(role, targetPlayerId) {
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
+    if (window.FirebaseSync && typeof window.FirebaseSync.authenticateUser === 'function') {
+      window.FirebaseSync.authenticateUser('coach', sessionData);
+    }
 
     if (loginScreen) loginScreen.classList.add('hidden');
     switchRole('coach');
@@ -196,6 +208,9 @@ function quickLogin(role, targetPlayerId) {
       loginTime: Date.now()
     };
     localStorage.setItem('thaai_tamizhans_auth_session', JSON.stringify(sessionData));
+    if (window.FirebaseSync && typeof window.FirebaseSync.authenticateUser === 'function') {
+      window.FirebaseSync.authenticateUser('player', sessionData);
+    }
 
     appData.activePlayerId = player.id;
     if (loginScreen) loginScreen.classList.add('hidden');
@@ -207,6 +222,9 @@ function quickLogin(role, targetPlayerId) {
 function handleUserLogout() {
   if (confirm('Are you sure you want to log out from தாய் தமிழன்ஸ் Portal?')) {
     localStorage.removeItem('thaai_tamizhans_auth_session');
+    if (window.FirebaseSync && typeof window.FirebaseSync.logout === 'function') {
+      window.FirebaseSync.logout();
+    }
     
     const loginScreen = document.getElementById('loginScreen');
     if (loginScreen) {
