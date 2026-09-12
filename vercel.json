@@ -1,6 +1,4 @@
 {
-  "version": 2,
-  "name": "thaai-tamizhans",
   "cleanUrls": true,
   "headers": [
     {
@@ -13,10 +11,11 @@
       ]
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
+
